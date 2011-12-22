@@ -1,25 +1,15 @@
 #!/usr/local/bin/coffee
-fs = require 'fs'
-util = require 'util'
-_ = require 'underscore'
-path = require 'path'
-async = require 'async'
-OptionParser = require('coffee-script/lib/coffee-script/optparse').OptionParser
 require 'colors'
-Builder = require('./builder')
+
+fs           = require 'fs'
+_            = require 'underscore'
+path         = require 'path'
+OptionParser = require('coffee-script/lib/coffee-script/optparse').OptionParser
+Builder      = require('./builder')
 
 {join, existsSync} = path
 
 printLine = (line) -> process.stdout.write line + '\n'
-###
-  поддержка сред в каждом степе
-  синхронное выполнение комманд
-  ограничение одновременное копирование большого числа файлов
-  лоигрование
-  хранение состояние со список выполненых операций скопированных файлов
-  поддержка минимального набора команд и возможность отката
-  поддержка дефайнов с объявлением в них переменных
-###
 
 VERSION = "0.1"
 BANNER = 'Usage: nbuild [options] command[:step]'
@@ -32,35 +22,47 @@ SWITCHES = [
 ]
 
 main = () ->
-  optionParser  = new OptionParser SWITCHES, BANNER
-  o = optionParser.parse process.argv[2..]
+  optParser  = new OptionParser SWITCHES, BANNER
+  o = optParser.parse process.argv[2..]
+  
   if o.help
-    printLine optionParser.help() 
+    printLine optParser.help() 
     return
+    
   if o.version
     printLine "nbuild v#{VERSION}"
     return
   
-  cfg = []
-  for file in fs.readdirSync(__dirname) when /\.nproj$/i.test(file)
-    cfg.push fs.realpathSync(join(__dirname,file))
-    break
-  cfg = _.union(cfg, fs.realpathSync(c)) for c in o.config when existsSync(c) if o.config?
+  configFiles = []
+  
+  # добавляем конфиги прописанные фручную
+  if o.config?
+    for cfg in o.config when existsSync(cfg) 
+      configFiles = _.union(configFiles, fs.realpathSync(cfg))
       
-  if cfg.length is 0
+  if configFiles.length is 0
+    # находим первый .nproj-файл в текущей директории
+    for file in fs.readdirSync(__dirname) when /\.nproj$/i.test(file)
+      configFiles.push fs.realpathSync(join(__dirname, file))
+      break
+      
+  if configFiles.length is 0
     printLine "Config wasn't found, read the help for more information `nbuild -h`".yellow
     return
+    
   if o.arguments.length is 0
     printLine "Command is not specified, read the help for more information `nbuild -h`".yellow
     return
     
-  options = {}
-  options.verbose     = o.verbose if o.verbose
-  options.enveroument = o.enveroument if o.enveroument
-  options.configs     = cfg
+  builderOptions = {}
+  builderOptions.verbose     = o.verbose if o.verbose
+  builderOptions.enveroument = o.enveroument if o.enveroument
+  builderOptions.configFiles = configFiles
   
-  builder = new Builder(options)
-  for cmd in o.arguments
-    builder.run(cmd)
+  try
+    builder = new Builder(builderOptions)
+    builder.run(cmd) for cmd in o.arguments
+  catch err
+    console.log printLine("#{err}".red)
     
 main()
