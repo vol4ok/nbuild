@@ -1,0 +1,2 @@
+class CoffekupCompiller
+  constructor: ->

@@ -1,0 +1,20 @@
+{
+  "name": "nbuild",
+  "description": "node.js build system",
+  "version": "0.0.1",
+  "author": "Sellsto.me team",
+  "engines": {
+    "node": ">=0.4.12"
+  },
+  "dependencies": {
+    "coffee-script": "git://github.com/vol4ok/coffee-script.git#disable-helpers",
+    "coffeekup": ">=0.3.1",
+    "less": ">=1.1.6",
+		"mime": ">=1.2.2",
+    "colors": ">=0.5.0",
+		"underscore": "1.2.1",
+		"async": ">=0.1.15",
+		"uglify-js": ">=1.1.1",
+		"mkdirp": ">=0.2.1"
+  }
+}

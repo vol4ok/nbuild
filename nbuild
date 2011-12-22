@@ -1,0 +1,66 @@
+#!/usr/local/bin/coffee
+fs = require 'fs'
+util = require 'util'
+_ = require 'underscore'
+path = require 'path'
+async = require 'async'
+OptionParser = require('coffee-script/lib/coffee-script/optparse').OptionParser
+require 'colors'
+Builder = require('./builder')
+
+{join, existsSync} = path
+
+printLine = (line) -> process.stdout.write line + '\n'
+###
+  поддержка сред в каждом степе
+  синхронное выполнение комманд
+  ограничение одновременное копирование большого числа файлов
+  лоигрование
+  хранение состояние со список выполненых операций скопированных файлов
+  поддержка минимального набора команд и возможность отката
+  поддержка дефайнов с объявлением в них переменных
+###
+
+VERSION = "0.1"
+BANNER = 'Usage: nbuild [options] command[:step]'
+SWITCHES = [
+  ['-c', '--config [FILE*]',    'path to .nproj file']
+  ['-e', '--enveroument [ARG]', 'set enveroument']
+  ['-b', '--verbose',           'verbose output']
+  ['-v', '--version',           'show version']
+  ['-h', '--help',              'display this help message']
+]
+
+main = () ->
+  optionParser  = new OptionParser SWITCHES, BANNER
+  o = optionParser.parse process.argv[2..]
+  if o.help
+    printLine optionParser.help() 
+    return
+  if o.version
+    printLine "nbuild v#{VERSION}"
+    return
+  
+  cfg = []
+  for file in fs.readdirSync(__dirname) when /\.nproj$/i.test(file)
+    cfg.push fs.realpathSync(join(__dirname,file))
+    break
+  cfg = _.union(cfg, fs.realpathSync(c)) for c in o.config when existsSync(c) if o.config?
+      
+  if cfg.length is 0
+    printLine "Config wasn't found, read the help for more information `nbuild -h`".yellow
+    return
+  if o.arguments.length is 0
+    printLine "Command is not specified, read the help for more information `nbuild -h`".yellow
+    return
+    
+  options = {}
+  options.verbose     = o.verbose if o.verbose
+  options.enveroument = o.enveroument if o.enveroument
+  options.configs     = cfg
+  
+  builder = new Builder(options)
+  for cmd in o.arguments
+    builder.run(cmd)
+    
+main()
