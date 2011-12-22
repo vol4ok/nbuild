@@ -1,14 +1,14 @@
 {
-  "verbose": "yes",
   "log-file": "",
+  "enveroument": "development",
   
-  "define": {
+  "_define": {
     "output-dir": "$(PROJECT_DIR)/build",
     "install-dir": "$(PROJECT_DIR)/../../_debug",
     
     "development": {
       "install-dir": "$(OUTPUT_DIR)/../../_debug",
-      "test-dir": "$(INSTALL_DIR)/$(OUTPUT_DIR)"
+      "test-dir": "$(INSTALL_DIR)/test"
     },
     "production": {
       "install-dir": "$(PROJECT_DIR)/../../_debug",
@@ -16,7 +16,16 @@
     }
   },
   
+  "_default": {
+    "output-dir": "$(OUTPUT_DIR)",
+    "development": {
+      "test-dir": "$(OUTPUT_DIR)/test",
+      "sources": [ "$(TEST_DIR)/test" ]
+    }
+  },
+  
   "configure": {
+    "type": "bundle",
     "script": {
       "type": "coffee-template",
       "template": "$(PROJECT_DIR)/src/scripts/config.coffee.template",
@@ -54,6 +63,7 @@
   },
   
   "build": {
+    "type": "bundle",
     "script": {
       "type": "script",
       "includes": [ "$(PROJECT_DIR)/src/scripts" ], 
@@ -90,6 +100,7 @@
   },
   
   "install": {
+    "type": "bundle",
     "copy-1": {
       "type": "copy",
       "sources": ["$(PROJECT_DIR)/src/_server"],
