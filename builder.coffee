@@ -6,31 +6,9 @@ path         = require 'path'
 async        = require 'async'
 {deepExtend} = require './helpers'
 
-{basename, dirname, extname, join, existsSync} = path
+{normalize, basename, dirname, extname, join, existsSync} = path
 
 _.templateSettings = interpolate : /\$\(([\S]+?)\)/g
-
-class FileCopier
-  constructor: ->
-    @numOfCopiedFiles = 0
-    @maxNumOfCopiedFiles = 10
-    @copyQueue = []
-    
-  copy: -> (src, dst, callback) ->
-    return false unless existsSync(src)
-    dstDir = dirname(dst)
-    mkdir.sync(dstDir, "0755") unless existsSync(dstDir)
-    if @numOfCopiedFiles >= @maxNumOfCopiedFiles
-      @copyQueue.push(=> @_copy(src, dst, callback))
-    else
-      @_copy(src, dst, callback)
-      
-  _copy: (src, dst, callback) ->
-    @numOfCopiedFiles++
-    util.pump fs.createReadStream(src), fs.createWriteStream(dst), (err) ->
-      @numOfCopiedFiles--;
-      @copyQueue.shift()() while @numOfCopiedFiles < @maxNumOfCopiedFiles
-      callback(err) if _.isFunction(callback)
       
 bundle = (builder, name, options) ->
   console.log 'bundle', options
@@ -46,7 +24,6 @@ exec = (builder, name, options) ->
   console.log 'exec', options
       
 class Builder
-  
   RESERVED_COMMANDS = ["_define", "_default", "_enveroument"]
   
   commands: {
@@ -56,6 +33,7 @@ class Builder
     "rollback": rollback
     "exec": exec
   }
+  
   constructor: (options) ->
     throw 'Error! No config!' if options.configFiles.length is 0
     @verbose = options.verbose or no
@@ -102,6 +80,7 @@ class Builder
     options = @_expandConfig(options)
     console.log "after".cyan, options
     @commands[type](this, name, options)
+    
   _expandString: (str) -> return _.template(str, @defines)
   _expandConfig: (cfg) ->
     result = {} 
@@ -109,8 +88,7 @@ class Builder
       if _.isString(val)
         result[key] = @_expandString(val)
       else if _.isArray(val)
-        result[key] = _.map val, (s) => 
-          return (if _.isString(s) then @_expandString(s) else s)
+        result[key] = _.map val, (s) => if _.isString(s) then @_expandString(s) else s
       else 
         result[key] = val
     return result
