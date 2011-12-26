@@ -205,3 +205,5 @@ class CopyFiles
         return false
       throw err
     return true
+
+module.exports = CopyFiles

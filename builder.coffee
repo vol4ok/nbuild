@@ -24,7 +24,8 @@ exec = (builder, name, options) ->
   console.log 'exec', options
       
 class Builder
-  RESERVED_COMMANDS = ["_define", "_default", "_enveroument"]
+  RESERVED_COMMANDS = ["_define", "_default", "_enveroument", "_type"]
+  STATE_FILE = "_state.json"
   
   commands: {
     "bundle": bundle
@@ -40,6 +41,7 @@ class Builder
 
     @config = {}
     @defaults = {}
+    
     hasLoad = no
     for configFile in options.configFiles
       continue unless configFile? and _.isString(configFile) and existsSync(configFile)
@@ -63,6 +65,8 @@ class Builder
     @_parseDefines(@config._define, @enveroument) if @config._define?
     @_parseDefaults(@config._default, @enveroument) if @config._default?
     
+    @_loadState()
+    
     # console.log 'defines', @defines
     console.log 'defaults', @defaults
     # console.log 'config', @config
@@ -72,14 +76,15 @@ class Builder
     @execConfig(cmdpath[cmdpath.length-1], @_findCommandConfig(cmdpath))
 
   execConfig: (name, options) ->
-    type = options.type
+    type = options._type
     type = 'bundle' unless type?
     return unless @commands[type]?
     #throw "Error! Unknown type #{cmdcfg.type}!" unless @commands[type]?
-    console.log "before".cyan, options
+    #console.log "before".cyan, options
     options = @_expandConfig(options)
-    console.log "after".cyan, options
+    #console.log "after".cyan, options
     @commands[type](this, name, options)
+    @_saveState()
     
   _expandString: (str) -> return _.template(str, @defines)
   _expandConfig: (cfg) ->
@@ -95,8 +100,8 @@ class Builder
       
   _findCommandConfig: (cmdpath) ->
     current = @config
-    throw "Error! Reserved command `#{cmdpath[0]}`!" if _.indexOf(RESERVED_COMMANDS, cmdpath[0]) isnt -1
     for cmd in cmdpath
+      throw "Error! Reserved command `#{cmd}`!" if _.indexOf(RESERVED_COMMANDS, cmd) isnt -1
       throw "Error! Unknown command `#{cmd}`!"  unless current[cmd]?
       current = current[cmd]
     return _.clone(current)
@@ -110,6 +115,20 @@ class Builder
       newKey = key.replace("-","_").toUpperCase()
       @defines[newKey] = _.template(val, @defines)
     return @defines
+    
+  _loadState: ->
+    if existsSync(STATE_FILE)
+      try
+        data = fs.readFileSync(join(__dirname, STATE_FILE), 'utf-8')
+        @state = JSON.parse(data)
+      catch err
+        console.log "Warning: invalid state file #{STATE_FILE}!"
+    else
+      @state = {}
+
+  _saveState: ->
+    data = JSON.stringify(@state)
+    fs.writeFileSync(join(__dirname, STATE_FILE), data, 'utf-8')
       
   _parseDefaults: (defaults, env) ->
     for key, val of defaults
