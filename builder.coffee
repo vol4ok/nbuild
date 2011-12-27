@@ -98,10 +98,7 @@ class Builder
     type = options._type
     type = 'bundle' unless type?
     return unless @commands[type]?
-    #throw "Error! Unknown type #{cmdcfg.type}!" unless @commands[type]?
-    #console.log "before".cyan, options
     options = @_expandConfig(options)
-    #console.log "after".cyan, options
     @commands[type](this, name, options)
     @_saveState()
     
