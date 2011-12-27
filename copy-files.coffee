@@ -52,7 +52,7 @@ class CopyFiles
     dst = normalize(dst)
     @_copy(src, dst, _.bind(@_complete, this))
   _complete: (status) ->
-    @options.on_complete(@statistics) if _.isFunction(@options.on_complete)
+    @options.on_complete(@statistics, this) if _.isFunction(@options.on_complete)
     
   generateRollback: () ->
     rollback = []
@@ -178,7 +178,7 @@ class CopyFiles
           @statistics.copiedSize += ctx.srcAttr.size
           
     if @options.on_progress? and _.isFunction(@options.on_progress)
-      @options.on_progress(ctx)
+      @options.on_progress(ctx, this)
       
     if --ctx.copying is 0 and not ctx.lock
       ctx.callback(ctx.status)
