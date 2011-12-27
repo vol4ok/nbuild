@@ -5,6 +5,7 @@ _            = require 'underscore'
 path         = require 'path'
 async        = require 'async'
 {deepExtend} = require './helpers'
+CopyFiles    = require './copy-files'
 
 {normalize, basename, dirname, extname, join, existsSync} = path
 
@@ -14,8 +15,15 @@ bundle = (builder, name, options) ->
   console.log 'bundle', options
   for key, val of options when typeof val is 'object'
     builder.execConfig(key, val)
+    
 copy = (builder, name, options) ->
   console.log 'copy', options
+  builder.lock()
+  cp = new CopyFiles options.source, options.destination, 
+    replaceStrategy: 2
+    on_complete: () ->
+      builder.unlock()
+
 remove = (builder, name, options) ->
   console.log 'remove', options
 rollback = (builder, name, options) ->
