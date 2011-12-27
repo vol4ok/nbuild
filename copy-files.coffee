@@ -6,14 +6,6 @@ path = require 'path'
 
 {normalize, basename, dirname, extname, join, existsSync} = path
 
-REPLACE       = 0
-SKIP          = 1
-REPLACE_OLDER = 2
-
-STATUS_SUCCESS    = 0
-STATUS_PENDING    = 1
-STATUS_FAIL       = -1
-
 class CopyFiles
   defaults: 
     copyFileTimestamp: yes
@@ -22,6 +14,25 @@ class CopyFiles
     on_complete: null
   numOfOpenFiles: 0
   maxNumOfOpenFiles: 100
+  
+  # for internal use
+  STATUS_SUCCESS = 0
+  STATUS_PENDING = 1
+  STATUS_FAIL    = -1
+  
+  # for export
+  STATUS_SUCCESS: STATUS_SUCCESS
+  STATUS_FAIL :   STATUS_FAIL
+  
+  # for internal use
+  REPLACE       = 0
+  SKIP          = 1
+  REPLACE_OLDER = 2
+  
+  # for export
+  REPLACE:       REPLACE
+  SKIP:          SKIP
+  REPLACE_OLDER: REPLACE_OLDER
   
   constructor: (src, dst, options) ->
     throw "Error: #{src} not found!" unless existsSync(src)
