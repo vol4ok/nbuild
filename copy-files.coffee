@@ -152,13 +152,13 @@ class CopyFiles
     util.pump(srcStream, dstStream, callback)
     
   _copyCompletetion: (err, ctx) ->
-    skiped = ctx.exists and not ctx.replace
-    unless ctx.folder or skiped
+    ctx.skipped = ctx.exists and not ctx.replace
+    unless ctx.folder or ctx.skipped
       @numOfOpenFiles--;
       while @transferQueue.length > 0 and @numOfOpenFiles < @maxNumOfOpenFiles
         @transferQueue.shift()()
     
-    if @options.copyFileTimestamp and not err and not skiped
+    if @options.copyFileTimestamp and not err and not ctx.skipped
       fs.utimesSync(ctx.dst, ctx.srcAttr.atime, ctx.srcAttr.mtime)
     
     if err == STATUS_FAIL
@@ -171,7 +171,7 @@ class CopyFiles
       if ctx.folder
         @statistics.dirsCopied++
       else
-        if skiped
+        if ctx.skipped
           @statistics.filesSkipped++
         else
           @statistics.filesCopied++
