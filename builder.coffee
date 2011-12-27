@@ -31,6 +31,20 @@ copy = (builder, name, options) ->
 remove = (builder, name, options) ->
   console.log 'remove', options
 rollback = (builder, name, options) ->
+  rollback = builder.state[options['step-name']].rollback
+  unless rollback?
+    console.warn "Warning: rollback for `#{name}` didn't found.".yellow
+    return
+  for entry in rollback
+    if entry.command is 'rm'
+      fs.unlinkSync(entry.path) if existsSync(entry.path)
+      console.log "rm #{entry.path}".grey if builder.verbose
+    else if entry.command is 'rmdir'
+      try
+        fs.rmdirSync(entry.path) if existsSync(entry.path)
+        console.log "rmdir #{entry.path}" if builder.verbose
+      catch err
+        console.warn "Warning: can't delete dir #{entry.path}".yellow
 exec = (builder, name, options) ->
   console.log 'exec', options
       

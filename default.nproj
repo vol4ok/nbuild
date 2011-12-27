@@ -15,5 +15,12 @@
       "source": "$(PROJECT_DIR)/node_modules",
       "destination": "$(OUTPUT_DIR)/node_modules"
     }
+  },
+  "clean": {
+    "rollback-1": {
+      "_type": "rollback",
+      "step-name": "copy-1"
+    }
   }
+  
 }
