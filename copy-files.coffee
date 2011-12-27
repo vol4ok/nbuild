@@ -55,6 +55,14 @@ class CopyFiles
     _genRollback(ctxList[0])
     return rollback
     
+  _makeDir: (path, ctx = null, mode = 0755) ->
+    parent = dirname(path)
+    unless existsSync(parent)
+      return false unless @_makeDir(parent, ctx, mode)
+    return false unless @_mkdirSync(path, mode)
+    ctx.createdFolders.push(path) if ctx?
+    return true
+    
   _copy: (src, dst, callback) ->
     #throw "Error: #{src} not found!" unless existsSync(src)
     ctx = 
