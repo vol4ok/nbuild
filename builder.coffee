@@ -12,7 +12,6 @@ CopyFiles    = require './copy-files'
 _.templateSettings = interpolate : /\$\(([\S]+?)\)/g
       
 bundle = (builder, name, options) ->
-  console.log 'bundle', options
   for key, val of options when typeof val is 'object'
     builder.execConfig(key, val)
     
@@ -32,7 +31,6 @@ copy = (builder, name, options) ->
 remove = (builder, name, options) ->
   console.log 'remove', options
 rollback = (builder, name, options) ->
-  console.log 'rollback', options
 exec = (builder, name, options) ->
   console.log 'exec', options
       
