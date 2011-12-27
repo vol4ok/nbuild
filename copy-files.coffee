@@ -178,7 +178,7 @@ class CopyFiles
           @statistics.copiedSize += ctx.srcAttr.size
           
     if @options.on_progress? and _.isFunction(@options.on_progress)
-      @options.on_progress(this)
+      @options.on_progress(ctx)
       
     if --ctx.copying is 0 and not ctx.lock
       ctx.callback(ctx.status)
