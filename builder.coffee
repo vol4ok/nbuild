@@ -53,13 +53,20 @@ rollback = (builder, name, options) ->
         
 exec = (builder, name, options) ->
   builder.lock()
-  child_process.exec options.command, (err, stdout, stderr) ->
-    if err is null
-      console.log stdout
-      console.log "Command `#{options.command}` successfully executed!".green
-    else
-      console.error stderr if builder.verbose
-      console.error "Error: exec `#{options.command}` failed with error \"#{err}\"".red
+  console.log 'executing...'.cyan
+  n = 0
+  async.forEachSeries options.commands
+  , (command, callback) -> 
+    child_process.exec command, (err, stdout, stderr) ->
+      if err is null
+        console.log stdout if builder.verbose
+        console.log "#{name}[#{n}]: `#{command}` successfully executed!".green
+      else
+        console.error stderr if builder.verbose
+        console.error "Error: exec `#{command}` failed with error \"#{err}\"".red
+      n++
+      callback(0) 
+  , (err) ->
     builder.unlock()
       
 class Builder
