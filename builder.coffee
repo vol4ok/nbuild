@@ -7,7 +7,7 @@ async        = require 'async'
 {deepExtend} = require './helpers'
 CopyFiles    = require './copy-files'
 
-{normalize, basename, dirname, extname, join, existsSync} = path
+{normalize, basename, dirname, extname, join, existsSync, relative} = path
 
 _.templateSettings = interpolate : /\$\(([\S]+?)\)/g
       
@@ -17,12 +17,15 @@ bundle = (builder, name, options) ->
     builder.execConfig(key, val)
     
 copy = (builder, name, options) ->
-  console.log 'copy', options
   builder.lock()
   cp = new CopyFiles options.source, options.destination, 
-    replaceStrategy: 2
-    on_complete: () ->
+    replaceStrategy: CopyFiles.REPLACE_OLDER
+    on_complete: (stat) ->
       builder.unlock()
+      console.log "#{name}: #{stat.filesCopied} files copied".green
+    on_progress: (ctx) ->
+      if builder.verbose and not ctx.skipped
+        console.log "#{relative(process.cwd(), ctx.src)} -> #{relative(process.cwd(), ctx.dst)}".grey
 
 remove = (builder, name, options) ->
   console.log 'remove', options
