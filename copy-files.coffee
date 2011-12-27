@@ -52,7 +52,7 @@ class CopyFiles
     dst = normalize(dst)
     @_copy(src, dst, _.bind(@_complete, this))
   _complete: (status) ->
-    @options.on_complete(this) if _.isFunction(@options.on_complete)
+    @options.on_complete(@statistics) if _.isFunction(@options.on_complete)
     
   generateRollback: () ->
     rollback = []
