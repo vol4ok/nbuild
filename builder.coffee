@@ -89,7 +89,14 @@ class Builder
     @_lock = no
     while @commandQue.length > 0
       @commandQue.shift()()
-  
+      
+  setState: (name, value) ->
+    if typeof @state[name] is 'object'
+      @state[name] = _.extend @state[name], value
+    else
+      @state[name] = value
+    
+    console.log @state
   run: (cmdstr) ->
     cmdpath = cmdstr.split(':')
     @execConfig(cmdpath[cmdpath.length-1], @_findCommandConfig(cmdpath))
