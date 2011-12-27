@@ -41,6 +41,8 @@ class Builder
 
     @config = {}
     @defaults = {}
+    @commandQue = []
+    @_lock = no
     
     hasLoad = no
     for configFile in options.configFiles
@@ -71,11 +73,20 @@ class Builder
     console.log 'defaults', @defaults
     # console.log 'config', @config
     
+  lock: -> @_lock = yes
+  unlock: -> 
+    @_lock = no
+    while @commandQue.length > 0
+      @commandQue.shift()()
+  
   run: (cmdstr) ->
     cmdpath = cmdstr.split(':')
     @execConfig(cmdpath[cmdpath.length-1], @_findCommandConfig(cmdpath))
 
   execConfig: (name, options) ->
+    if @_lock
+      @commandQue.push(=> @execConfig(name, options))
+      return
     type = options._type
     type = 'bundle' unless type?
     return unless @commands[type]?
