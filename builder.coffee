@@ -20,10 +20,12 @@ copy = (builder, name, options) ->
   builder.lock()
   cp = new CopyFiles options.source, options.destination, 
     replaceStrategy: CopyFiles.REPLACE_OLDER
-    on_complete: (stat) ->
+    on_complete: (stat, cp) ->
       builder.unlock()
       console.log "#{name}: #{stat.filesCopied} files copied".green
-    on_progress: (ctx) ->
+      rollback = cp.generateRollback()
+      builder.setState(name, rollback: rollback)
+    on_progress: (ctx, cp) ->
       if builder.verbose and not ctx.skipped
         console.log "#{relative(process.cwd(), ctx.src)} -> #{relative(process.cwd(), ctx.dst)}".grey
 
@@ -95,8 +97,6 @@ class Builder
       @state[name] = _.extend @state[name], value
     else
       @state[name] = value
-    
-    console.log @state
   run: (cmdstr) ->
     cmdpath = cmdstr.split(':')
     @execConfig(cmdpath[cmdpath.length-1], @_findCommandConfig(cmdpath))
