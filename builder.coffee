@@ -5,8 +5,9 @@ _             = require 'underscore'
 path          = require 'path'
 async         = require 'async'
 {deepExtend}  = require './helpers'
+child_process = require 'child_process'
 CopyFiles     = require './copy-files'
-child_process = require('child_process')
+RemoveFiles   = require './remove-files'
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
@@ -30,7 +31,10 @@ copy = (builder, name, options) ->
         console.log "#{relative(process.cwd(), ctx.src)} -> #{relative(process.cwd(), ctx.dst)}".grey
 
 remove = (builder, name, options) ->
-  console.log 'remove', options
+  rm = new RemoveFiles options.items, on_remove: (item) ->
+    console.log "remove #{relative(process.cwd(), item)}".grey if builder.verbose
+  console.log "#{name}: #{rm.statistics.filesRemoved} files removed".green
+  
 rollback = (builder, name, options) ->
   rollback = builder.state[options['step-name']].rollback
   unless rollback?

@@ -18,6 +18,10 @@
     "exec-1": {
       "_type": "exec",
       "command": "git hist"
+    },
+    "remove-1": {
+      "_type": "remove",
+      "items": [ "test" ]
     }
   },
   "clean": {
