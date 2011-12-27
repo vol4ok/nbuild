@@ -7,14 +7,6 @@ path = require 'path'
 {normalize, basename, dirname, extname, join, existsSync} = path
 
 class CopyFiles
-  defaults: 
-    copyFileTimestamp: yes
-    replaceStrategy: REPLACE_OLDER
-    on_progress: null
-    on_complete: null
-  numOfOpenFiles: 0
-  maxNumOfOpenFiles: 100
-  
   # for internal use
   STATUS_SUCCESS = 0
   STATUS_PENDING = 1
@@ -33,6 +25,14 @@ class CopyFiles
   REPLACE:       REPLACE
   SKIP:          SKIP
   REPLACE_OLDER: REPLACE_OLDER
+  
+  defaults: 
+    copyFileTimestamp: yes
+    replaceStrategy: REPLACE_OLDER
+    on_progress: null
+    on_complete: null
+  numOfOpenFiles: 0
+  maxNumOfOpenFiles: 100
   
   constructor: (src, dst, options) ->
     throw "Error: #{src} not found!" unless existsSync(src)
