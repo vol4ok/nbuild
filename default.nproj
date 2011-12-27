@@ -14,6 +14,10 @@
       "_type": "copy",
       "source": "$(PROJECT_DIR)/node_modules",
       "destination": "$(OUTPUT_DIR)/node_modules"
+    },
+    "exec-1": {
+      "_type": "exec",
+      "command": "git hist"
     }
   },
   "clean": {

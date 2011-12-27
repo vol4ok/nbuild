@@ -1,11 +1,12 @@
 require "colors"
-fs           = require 'fs'
-util         = require 'util'
-_            = require 'underscore'
-path         = require 'path'
-async        = require 'async'
-{deepExtend} = require './helpers'
-CopyFiles    = require './copy-files'
+fs            = require 'fs'
+util          = require 'util'
+_             = require 'underscore'
+path          = require 'path'
+async         = require 'async'
+{deepExtend}  = require './helpers'
+CopyFiles     = require './copy-files'
+child_process = require('child_process')
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
@@ -45,8 +46,17 @@ rollback = (builder, name, options) ->
         console.log "rmdir #{entry.path}" if builder.verbose
       catch err
         console.warn "Warning: can't delete dir #{entry.path}".yellow
+        
 exec = (builder, name, options) ->
-  console.log 'exec', options
+  builder.lock()
+  child_process.exec options.command, (err, stdout, stderr) ->
+    if err is null
+      console.log stdout
+      console.log "Command `#{options.command}` successfully executed!".green
+    else
+      console.error stderr if builder.verbose
+      console.error "Error: exec `#{options.command}` failed with error \"#{err}\"".red
+    builder.unlock()
       
 class Builder
   RESERVED_COMMANDS = ["_define", "_default", "_enveroument", "_type"]
