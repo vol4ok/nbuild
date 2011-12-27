@@ -115,7 +115,7 @@ class Builder
   lock: -> @_lock = yes
   unlock: -> 
     @_lock = no
-    while @commandQue.length > 0
+    while not @_lock and @commandQue.length > 0
       @commandQue.shift()()
       
   setState: (name, value) ->
