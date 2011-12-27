@@ -16,7 +16,7 @@ BANNER = 'Usage: nbuild [options] command[:step]'
 SWITCHES = [
   ['-c', '--config [FILE*]',    'path to .nproj file']
   ['-e', '--enveroument [ARG]', 'set enveroument']
-  ['-b', '--verbose',           'verbose output']
+  ['-V', '--verbose',           'verbose output']
   ['-v', '--version',           'show version']
   ['-h', '--help',              'display this help message']
 ]
