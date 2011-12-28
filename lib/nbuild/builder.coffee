@@ -109,6 +109,8 @@ class Builder
       
     throw 'Error! No valid config!' unless hasLoad
     
+    process.chdir(@defines.PROJECT_DIR)
+    
     @enveroument = options.enveroument or @config._enveroument
     @_parseDefines(@config._define, @enveroument) if @config._define?
     @_parseDefaults(@config._default, @enveroument) if @config._default?
@@ -178,7 +180,7 @@ class Builder
   _loadState: ->
     if existsSync(STATE_FILE)
       try
-        data = fs.readFileSync(join(__dirname, STATE_FILE), 'utf-8')
+        data = fs.readFileSync(join(@defines.PROJECT_DIR, STATE_FILE), 'utf-8')
         @state = JSON.parse(data)
       catch err
         console.log "Warning: invalid state file #{STATE_FILE}!"
@@ -187,7 +189,7 @@ class Builder
 
   _saveState: ->
     data = JSON.stringify(@state)
-    fs.writeFileSync(join(__dirname, STATE_FILE), data, 'utf-8')
+    fs.writeFileSync(join(@defines.PROJECT_DIR, STATE_FILE), data, 'utf-8')
       
   _parseDefaults: (defaults, env) ->
     for key, val of defaults
