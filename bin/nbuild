@@ -5,7 +5,7 @@ fs           = require 'fs'
 _            = require 'underscore'
 path         = require 'path'
 OptionParser = require('coffee-script/lib/coffee-script/optparse').OptionParser
-Builder      = require('./builder')
+Builder      = require('../lib/nbuild/builder')
 
 {join, existsSync} = path
 
@@ -42,8 +42,8 @@ main = () ->
       
   if configFiles.length is 0
     # находим первый .nproj-файл в текущей директории
-    for file in fs.readdirSync(__dirname) when /\.nproj$/i.test(file)
-      configFiles.push fs.realpathSync(join(__dirname, file))
+    for file in fs.readdirSync(process.cwd()) when /\.nproj$/i.test(file)
+      configFiles.push fs.realpathSync(join(process.cwd(), file))
       break
       
   if configFiles.length is 0
