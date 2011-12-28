@@ -53,8 +53,18 @@ rollback = (builder, name, options) ->
         
 exec = (builder, name, options) ->
   builder.lock()
-  console.log 'executing...'.cyan
+  oldDir = null
+  if options["change-dir"]
+    if existsSync(options["change-dir"])
+      newDir = fs.realpathSync(options["change-dir"])
+      oldDir = process.cwd()
+      console.log "change dir to #{newDir}".cyan
+      process.chdir(newDir)
+    else
+      builder.unlock()
+      throw "Error: directory #{options["change-dir"]} not exists"
   n = 0
+  console.log 'executing...'.cyan
   async.forEachSeries options.commands
   , (command, callback) -> 
     child_process.exec command, (err, stdout, stderr) ->
@@ -67,6 +77,8 @@ exec = (builder, name, options) ->
       n++
       callback(0) 
   , (err) ->
+    if oldDir
+      process.chdir(oldDir)
     builder.unlock()
       
 class Builder

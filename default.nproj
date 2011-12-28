@@ -19,8 +19,9 @@
       "_type": "exec",
       "commands": [ 
         "echo \"Hello world\"", 
-        "git hist", 
-        "sleep 3"]
+        "ls -la", 
+        "sleep 3"],
+      "change-dir": "./test"
     },
     "remove-1": {
       "_type": "remove",
