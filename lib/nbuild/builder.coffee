@@ -12,7 +12,7 @@ RemoveFiles   = require './remove-files'
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
 _.templateSettings = interpolate : /\$\(([\S]+?)\)/g
-      
+
 bundle = (builder, name, options) ->
   for key, val of options when typeof val is 'object'
     builder.execConfig(key, val)
