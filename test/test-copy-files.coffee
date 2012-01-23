@@ -11,8 +11,10 @@ CopyFiles = require '../lib/nbuild/copy-files'
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('')
 SRC_DIR  = '/tmp/test-copy-files/src'
 DST_DIR  = '/tmp/test-copy-files/dst'
-NUM_OF_FILES = 5
+NUM_OF_FILES = 20
 FILE_SIZE_LIMIT = 1000
+
+g_createdDirs = []
 
 rand = (n) -> Math.floor(Math.random()*n)
 
@@ -22,11 +24,12 @@ generateName = (alphabet, length) ->
     name += alphabet[rand(alphabet.length)]
   return name
   
-mkdirp = (path, mode = 0755) ->
-  return 
+mkdirp = (path, mode = 0755) -> 
   parent = dirname(path)
   mkdirp(parent, mode) unless existsSync(parent)
-  fs.mkdirSync(path, mode) unless existsSync(path)
+  unless existsSync(path)
+    fs.mkdirSync(path, mode) 
+    g_createdDirs.push(path)
 
 cleanDir = (path) ->
   for f in fs.readdirSync(path)
@@ -67,4 +70,12 @@ vows.describe('copy-files').addBatch({
           srcStat = fs.lstatSync(SRC_DIR)
           dstStat = fs.lstatSync(DST_DIR)
           assert.equal srcStat.size, dstStat.size
+}).addBatch({
+  'clean': 
+    topic: ->
+      cleanDir(SRC_DIR)
+      cleanDir(DST_DIR)
+      while g_createdDirs.length > 0
+        fs.rmdirSync(g_createdDirs.pop())
+    'cleaned': ->
 }).export(module)
