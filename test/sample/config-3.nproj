@@ -1,0 +1,20 @@
+{
+  "@environment": "development",
+  "test": {
+    "@type": "define",
+    "@environment": "development",
+    "define_0": "$(PROJECT_DIR)/$(CURRENT_DIR)/$(PROJECT_NAME)/test",
+    "define_1": 1,
+    "define_2": "2",
+    "define_3": "2$(define_1)",
+    "define_4": "4$(define_2)",
+    "define_5": [5, "5", "5$(define_3)", "5$(define_3)$(define_4)"],
+    "define_6": {"test1": "6$(define_3)", "$(define_2)": "$(define_3)"},
+    "define_7": "@(define_5)",
+    "define_8": "@(define_6)",
+    "define_9": "$(define_6)",
+    "define_10": "@(define_6)_",
+    "define_11": "12\\$(define_2)",
+    "define_12": "12\\\\$(define_2)"
+  }
+}

@@ -20,7 +20,8 @@ RemoveFiles   = require './remove-files'
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
-_.templateSettings = interpolate : /\$\(([\S]+?)\)/g
+VARIABLE_REGEX_1 = /\$\(([\S]+?)\)/g
+VARIABLE_REGEX_2 = /^\@\(([\S]+?)\)$/
 
 ###*
   * Batch command — execute multiple steps
@@ -99,10 +100,14 @@ exec = (builder, name, options) ->
       process.chdir(oldDir)
     builder.unlock()
     
-###* @class Builder сlass ###
+###* 
+ * @class Builder сlass 
+ * @public
+ * @api
+###
       
 class Builder
-  RESERVED_COMMANDS = ["@define", "@default", "@environment", "@type"]
+  RESERVED_COMMANDS = ["@environment", "@type"]
   STATE_FILE = "_state.json"
   
   commands: {
@@ -169,7 +174,7 @@ class Builder
     * @public 
     ###
     @defines = null
-    
+        
     ###* 
     * @field environment {String}
     * @public 
@@ -194,18 +199,44 @@ class Builder
           CURRENT_DIR:  process.cwd()
       
     throw 'Error! No valid config!' unless hasLoad
-    
-    process.chdir(@defines.PROJECT_DIR)
-    
+      
     @environment = options.environment or @config["@environment"]
     
-    # for key,val of @config when val['@type'] and val['@type'] is 'define'
-    #   @_parseDefines(val, @environment)
+    for name, node of @config when node['@type'] and node['@type'] is 'define'
+      continue if node["@environment"] and node["@environment"] isnt @environment
+      for key, val of node
+        continue if key[0] is '@'
+        @defines[key] = @_parseVars(val)
+        
+    #console.log @defines
+                
     # for key,val of @config when val['@type'] and val['@type'] is 'default'
-    #   @_parseDefaults(val, @env)
+    #   @_parseDefaults(val, @environment)
     # @_loadState()
     
     
+    
+  ###*
+  * Parse variables
+  * @private
+  ###
+    
+  _parseVars: (val) ->
+    replacer = (match, name, pos, str) => 
+      i = 0
+      while pos > 0 and str[pos-1] == '\\'
+        pos--; i++
+      if i % 2 is 1
+        return match
+      return if _.isString(@defines[name]) then @defines[name] else JSON.stringify(@defines[name])
+    if _.isString(val)
+      if VARIABLE_REGEX_2.test(val)
+        return JSON.parse(val.replace(VARIABLE_REGEX_2, replacer))
+      return val.replace(VARIABLE_REGEX_1, replacer)
+    else
+      return JSON.parse(JSON.stringify(val).replace(VARIABLE_REGEX_1, replacer))
+      
+      
     
   ###*
   * Locks class while async operation in process
@@ -274,8 +305,10 @@ class Builder
   ###
 
   exec: (cmdstr) ->
+    process.chdir(@defines.PROJECT_DIR)
     cmdpath = cmdstr.split(':')
     @execConfig(cmdpath[cmdpath.length-1], @_findCommandConfig(cmdpath))
+    process.chdir(@defines.CURRENT_DIR)
 
   ###*
   * Execute config object
@@ -296,20 +329,6 @@ class Builder
     options = @_expandConfig(options)
     @commands[type](this, name, options)
     @_saveState()
-    
-    
-    
-  _expandString: (str) -> return _.template(str, @defines)
-  _expandConfig: (cfg) ->
-    result = {} 
-    for key, val of cfg 
-      if _.isString(val)
-        result[key] = @_expandString(val)
-      else if _.isArray(val)
-        result[key] = _.map val, (s) => if _.isString(s) then @_expandString(s) else s
-      else 
-        result[key] = val
-    return result
       
   _findCommandConfig: (cmdpath) ->
     current = @config
@@ -330,7 +349,8 @@ class Builder
     
   ###
     
-  _parseDefines: (defines, env) ->
+  _parseDefines: (define, env) ->
+    
     temp = {}
     temp[key] = val for key, val of defines when _.isString(val)
     for key, obj of defines when typeof obj is "object" and key is env
