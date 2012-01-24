@@ -1,4 +1,44 @@
-_ = require 'underscore'
+###!
+ * nBuild
+ * Copyright(c) 2011-2012 vol4ok <admin@vol4ok.net>
+ * MIT Licensed
+###
+
+###* Module dependencies ###
+
+fs   = require 'fs'
+path = require 'path'
+_    = require 'underscore'
+
+{normalize, basename, dirname, extname, join, existsSync, relative} = path
+
+rand = (n) -> Math.floor(Math.random()*n)
+
+generateName = (alphabet, length) ->
+  name = ""
+  for i in [0...length]
+    name += alphabet[rand(alphabet.length)]
+  return name
+  
+mkdirp = (path, mode = 0755, createdDirs = null) -> 
+  parent = dirname(path)
+  mkdirp(parent, mode) unless existsSync(parent)
+  unless existsSync(path)
+    fs.mkdirSync(path, mode) 
+    createdDirs.push(path) if _.isArray(createdDirs)
+
+cleanDir = (path) ->
+  for f in fs.readdirSync(path)
+    fs.unlinkSync(join(path,f))
+  
+generateFiles = (dir, count, maxSize, callback) ->
+  files = []
+  for i in [0...count]
+    files.push join(dir, generateName(ALPHABET, 10))
+  async.forEach files, (file, cb) -> 
+    exec "dd if=/dev/urandom of=#{file} bs=1 count=#{rand(maxSize)}", cb
+  , callback
+  return files
 
 deepExtend = ->
   args = []
@@ -24,4 +64,4 @@ deepExtend = ->
       target[key] = deepExtend(clone, val)
   return target
   
-exports.deepExtend = deepExtend
+exports extends {rand, generateName, mkdirp, cleanDir, generateFiles, deepExtend}

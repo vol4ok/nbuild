@@ -1,3 +1,11 @@
+###!
+ * nBuild
+ * Copyright(c) 2011-2012 vol4ok <admin@vol4ok.net>
+ * MIT Licensed
+###
+
+###* Module dependencies ###
+
 vows      = require 'vows'
 assert    = require 'assert'
 async     = require 'async'
@@ -5,7 +13,9 @@ fs        = require 'fs'
 path      = require 'path'
 exec      = require('child_process').exec
 CopyFiles = require '../lib/nbuild/copy-files'
+helpers   = require '../lib/nbuild/helpers'
 
+{rand, generateName, mkdirp, cleanDir, generateFiles} = helpers
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('')
@@ -16,36 +26,8 @@ FILE_SIZE_LIMIT = 1000
 
 g_createdDirs = []
 
-rand = (n) -> Math.floor(Math.random()*n)
-
-generateName = (alphabet, length) ->
-  name = ""
-  for i in [0...length]
-    name += alphabet[rand(alphabet.length)]
-  return name
-  
-mkdirp = (path, mode = 0755) -> 
-  parent = dirname(path)
-  mkdirp(parent, mode) unless existsSync(parent)
-  unless existsSync(path)
-    fs.mkdirSync(path, mode) 
-    g_createdDirs.push(path)
-
-cleanDir = (path) ->
-  for f in fs.readdirSync(path)
-    fs.unlinkSync(join(path,f))
-  
-generateFiles = (dir, count, maxSize, callback) ->
-  files = []
-  for i in [0...count]
-    files.push join(dir, generateName(ALPHABET, 10))
-  async.forEach files, (file, cb) -> 
-    exec "dd if=/dev/urandom of=#{file} bs=1 count=#{rand(maxSize)}", cb
-  , callback
-  return files
-
-mkdirp(SRC_DIR)
-mkdirp(DST_DIR)
+mkdirp(SRC_DIR, 0755, g_createdDirs)
+mkdirp(DST_DIR, 0755, g_createdDirs)
 
 vows.describe('copy-files').addBatch({
   'basic copy':
