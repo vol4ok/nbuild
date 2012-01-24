@@ -1,3 +1,12 @@
+###!
+ * nBuild
+ * Copyright(c) 2011-2012 vol4ok <admin@vol4ok.net>
+ * MIT Licensed
+###
+ 
+ 
+###* Module dependencies ###
+
 require "colors"
 fs            = require 'fs'
 util          = require 'util'
@@ -13,7 +22,16 @@ RemoveFiles   = require './remove-files'
 
 _.templateSettings = interpolate : /\$\(([\S]+?)\)/g
 
-bundle = (builder, name, options) ->
+###*
+  * Batch command — execute multiple steps
+  *
+  * @private
+  * @param {Object} builder
+  * @param {String} name
+  * @param {Object} options 
+###
+
+batch = (builder, name, options) ->
   for key, val of options when typeof val is 'object'
     builder.execConfig(key, val)
     
@@ -80,27 +98,83 @@ exec = (builder, name, options) ->
     if oldDir
       process.chdir(oldDir)
     builder.unlock()
+    
+###* @class Builder сlass ###
       
 class Builder
-  RESERVED_COMMANDS = ["_define", "_default", "_enveroument", "_type"]
+  RESERVED_COMMANDS = ["@define", "@default", "@environment", "@type"]
   STATE_FILE = "_state.json"
   
   commands: {
-    "bundle": bundle
+    "batch": batch
     "copy": copy
     "remove": remove
     "rollback": rollback
     "exec": exec
   }
   
+  ###*
+  * @constructor
+  * @public
+  * @api
+  * @param options.verbose     {Boolean}
+  * @param options.environment {String}
+  * @param options.configFiles {Array} array of path of config files
+  * @param options.workDir     {String} path to work dir
+  * @description
+      1) initialize fields
+      2) parse each config file
+      3) set global defines
+      4) set global defaults
+      5) set environment
+      6) set work directory to main config dir
+      7) load state
+  ###
+  
   constructor: (options) ->
     throw 'Error! No config!' if options.configFiles.length is 0
+    
+    ###* 
+    * @field verbose {Boolean}
+    * @private 
+    ###
     @verbose = options.verbose or no
-
+    
+    ###* 
+    * @field config {Object}
+    * @private 
+    ###
     @config = {}
-    @defaults = {}
+    
+    ###* 
+    * @field defaults {Object}
+    * @private 
+    ###
     @commandQue = []
-    @_lock = no
+    
+    ###* 
+    * @field lock {Boolean}
+    * @private 
+    ###
+    @lock = no
+    
+    ###* 
+    * @field defaults {Object}
+    * @public 
+    ###
+    @defaults = {}
+    
+    ###* 
+    * @field defines {Object}
+    * @public 
+    ###
+    @defines = null
+    
+    ###* 
+    * @field environment {String}
+    * @public 
+    ###
+    @environment = ""
     
     hasLoad = no
     for configFile in options.configFiles
@@ -123,41 +197,107 @@ class Builder
     
     process.chdir(@defines.PROJECT_DIR)
     
-    @enveroument = options.enveroument or @config._enveroument
-    @_parseDefines(@config._define, @enveroument) if @config._define?
-    @_parseDefaults(@config._default, @enveroument) if @config._default?
+    @environment = options.environment or @config["@environment"]
     
-    @_loadState()
+    # for key,val of @config when val['@type'] and val['@type'] is 'define'
+    #   @_parseDefines(val, @environment)
+    # for key,val of @config when val['@type'] and val['@type'] is 'default'
+    #   @_parseDefaults(val, @env)
+    # @_loadState()
     
-    # console.log 'defines', @defines
-    console.log 'defaults', @defaults
-    # console.log 'config', @config
     
-  lock: -> @_lock = yes
+    
+  ###*
+  * Locks class while async operation in process
+  * @public
+  ###
+  
+  lock: -> @lock = yes
+  
+  ###*
+  * Unlock class, continue command execution
+  * @public
+  ###
+  
   unlock: -> 
-    @_lock = no
-    while not @_lock and @commandQue.length > 0
+    @lock = no
+    while not @lock and @commandQue.length > 0
       @commandQue.shift()()
-      
+
+
+
+  ###*
+  * Set state
+  * @public
+  * @param name  {String}
+  * @param value {Any}
+  ###
+  
   setState: (name, value) ->
     if typeof @state[name] is 'object'
       @state[name] = _.extend @state[name], value
     else
       @state[name] = value
-  run: (cmdstr) ->
+      
+  ###*
+  * Load state from file
+  * @private
+  ###
+  
+  _loadState: ->
+    if existsSync(STATE_FILE)
+      try
+        data = fs.readFileSync(join(@defines.PROJECT_DIR, STATE_FILE), 'utf-8')
+        @state = JSON.parse(data)
+      catch err
+        console.log "Warning: invalid state file #{STATE_FILE}!"
+    else
+      @state = {}
+
+  ###*
+  * Save state to file
+  * @private
+  ###
+  
+  _saveState: ->
+    data = JSON.stringify(@state)
+    fs.writeFileSync(join(@defines.PROJECT_DIR, STATE_FILE), data, 'utf-8')
+
+
+
+  ###*
+  * Execute command string
+  *
+  * @public
+  * @api
+  * @param cmdstr {String}
+  ###
+
+  exec: (cmdstr) ->
     cmdpath = cmdstr.split(':')
     @execConfig(cmdpath[cmdpath.length-1], @_findCommandConfig(cmdpath))
 
+  ###*
+  * Execute config object
+  *
+  * @public
+  * @api
+  * @param name    {String} config name
+  * @param options {Object} config object
+  ###
+  
   execConfig: (name, options) ->
     if @_lock
       @commandQue.push(=> @execConfig(name, options))
       return
     type = options._type
-    type = 'bundle' unless type?
+    type = 'batch' unless type?
     return unless @commands[type]?
     options = @_expandConfig(options)
     @commands[type](this, name, options)
     @_saveState()
+    
+    
     
   _expandString: (str) -> return _.template(str, @defines)
   _expandConfig: (cfg) ->
@@ -179,6 +319,17 @@ class Builder
       current = current[cmd]
     return _.clone(current)
     
+  ###*
+  * Parse defines object
+  * 
+  * @private
+  * @param defines {Object} object to parse
+  * @param env {String} environment name
+  * @return updated this.defines fiedld
+  * @description
+    
+  ###
+    
   _parseDefines: (defines, env) ->
     temp = {}
     temp[key] = val for key, val of defines when _.isString(val)
@@ -188,20 +339,6 @@ class Builder
       newKey = key.replace("-","_").toUpperCase()
       @defines[newKey] = _.template(val, @defines)
     return @defines
-    
-  _loadState: ->
-    if existsSync(STATE_FILE)
-      try
-        data = fs.readFileSync(join(@defines.PROJECT_DIR, STATE_FILE), 'utf-8')
-        @state = JSON.parse(data)
-      catch err
-        console.log "Warning: invalid state file #{STATE_FILE}!"
-    else
-      @state = {}
-
-  _saveState: ->
-    data = JSON.stringify(@state)
-    fs.writeFileSync(join(@defines.PROJECT_DIR, STATE_FILE), data, 'utf-8')
       
   _parseDefaults: (defaults, env) ->
     for key, val of defaults

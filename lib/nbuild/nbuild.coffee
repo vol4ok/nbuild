@@ -13,9 +13,9 @@ VERSION = "0.1"
 BANNER = 'Usage: nbuild [options] command[:step]'
 SWITCHES = [
   ['-c', '--config [FILE*]',    'path to .nproj file']
-  ['-e', '--enveroument [ARG]', 'set enveroument']
-  ['-V', '--verbose',           'verbose output']
-  ['-v', '--version',           'show version']
+  ['-e', '--environment [ARG]', 'set environment']
+  ['-v', '--verbose',           'verbose output']
+  ['-V', '--version',           'show version']
   ['-h', '--help',              'display this help message']
 ]
 
@@ -54,12 +54,12 @@ main = () ->
     
   builderOptions = {}
   builderOptions.verbose     = o.verbose if o.verbose
-  builderOptions.enveroument = o.enveroument if o.enveroument
+  builderOptions.environment = o.environment if o.environment
   builderOptions.configFiles = configFiles
   
   try
     builder = new Builder(builderOptions)
-    builder.run(cmd) for cmd in o.arguments
+    builder.exec(cmd) for cmd in o.arguments
   catch err
     console.log printLine("#{err}".red)
     
