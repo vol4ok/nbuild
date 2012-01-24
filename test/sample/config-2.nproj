@@ -1,0 +1,12 @@
+{
+  "@environment": "production",
+  "test": {
+    "@type": "defines",
+    "@environment": "development",
+    "overwrite-test-1": null,
+    "overwrite-test-2": 2,
+    "overwrite-test-3": "2",
+    "overwrite-test-4": [2,"3"],
+    "overwrite-test-5": {"tset": "2"}
+  }
+}
