@@ -123,6 +123,13 @@ vows.describe('Builder').addBatch({
       assert.include(builder.types, 'test')
       assert.include(builder.types, 'test2')
       assert.include(builder.types, 'test3')
+  'load standard plugins':
+    topic: -> new Builder 
+      configFiles: [ join(WORK_DIR,'config-3.nproj') ]
+      plugins: [ '../../plugins' ]
+    'check plugins load': (builder) ->
+      assert.include(builder.types, 'copy')
+      assert.include(builder.types, 'remove')
   # 'detect environment':
   # 'state':
   # 'async lock':
