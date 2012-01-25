@@ -22,7 +22,7 @@ SWITCHES = [
   ['-e', '--environment [ARG]', 'set environment']
   ['-v', '--verbose',           'verbose output']
   ['-V', '--version',           'show version']
-  ['-p', '--plugin [FILE*]'],   'add plugin file or dir']
+  ['-p', '--plugin [FILE*]',   'add plugin file or dir']
   ['-h', '--help',              'display this help message']
 ]
 
