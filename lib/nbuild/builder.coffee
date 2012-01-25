@@ -87,7 +87,7 @@ class Builder
     * @field lock {Boolean}
     * @private 
     ###
-    @lock = no
+    @_lock = no
     
     ###* 
     * @field defaults {Object}
@@ -154,7 +154,7 @@ class Builder
   * @public
   ###
   
-  lock: -> @lock = yes
+  lock: -> @_lock = yes
   
   ###*
   * Unlock class, continue command execution
@@ -162,8 +162,8 @@ class Builder
   ###
   
   unlock: -> 
-    @lock = no
-    while not @lock and @commandQue.length > 0
+    @_lock = no
+    while not @_lock and @commandQue.length > 0
       @commandQue.shift()()
 
 
@@ -233,11 +233,11 @@ class Builder
     if @_lock
       @commandQue.push(=> @execConfig(name, options))
       return
-    type = options._type
+    type = options['@type']
     type = 'batch' unless type?
-    return unless @commands[type]?
+    return unless @types[type]?
     options = @_expandConfig(options)
-    @commands[type](this, name, options)
+    @types[type](name, options)
     @_saveState()
     
   ###*
@@ -290,7 +290,7 @@ class Builder
   ###
   
   registerType: (name, func, obj = null) ->
-    if obj
+    if obj?
       @types[name] = _.bind(func, obj)
     else
       @types[name] = func
@@ -360,8 +360,6 @@ class Builder
     for key, val of config
       continue if key[0] is '@'
       @defaults[key] = @_parseVars(val)
-
-
 
   _expandConfig: (config) ->
     result = {}
