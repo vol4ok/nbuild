@@ -21,7 +21,11 @@ child_process = require 'child_process'
 VARIABLE_REGEX_1 = /\$\(([\S]+?)\)/g
 VARIABLE_REGEX_2 = /^\@\(([\S]+?)\)$/
     
-    
+###
+TODO
+  push enveroument for every batch
+  
+###
        
 ###* 
 * @class Builder сlass 
