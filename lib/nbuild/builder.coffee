@@ -207,10 +207,13 @@ class Builder
       for key, val of node
         continue if key[0] is '@'
         @defines[key] = @_parseVars(val)
+                        
+    for key,val of @config when val['@type'] and val['@type'] is 'default'
+      continue if node["@environment"] and node["@environment"] isnt @environment
+      for key, val of node
+        continue if key[0] is '@'
+        @defaults[key] = @_parseVars(val)
         
-    #console.log @defines
-                
-    # for key,val of @config when val['@type'] and val['@type'] is 'default'
     #   @_parseDefaults(val, @environment)
     # @_loadState()
     

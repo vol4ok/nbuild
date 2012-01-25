@@ -18,7 +18,8 @@ helpers   = require '../lib/nbuild/helpers'
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 {rand, generateName, mkdirp, cleanDir, generateFiles} = helpers
 
-WORK_DIR = "#{__dirname}/sample"
+WORK_DIR    = "#{__dirname}/sample"
+CURRENT_DIR = process.cwd()
 
 g_createdDirs = []
 
@@ -55,8 +56,38 @@ vows.describe('builder').addBatch({
       assert.equal(builder.config.test["overwrite-test-3"], "2")
       assert.deepEqual(builder.config.test["overwrite-test-4"], [2,"3"])
       assert.deepEqual(builder.config.test["overwrite-test-5"], {"test":"1", "tset": "2"})
-  # 'parse defines':
-  # 'parse defaults':
+  'parse defines':
+    topic: ->
+      return new Builder 
+        configFiles: [ join(WORK_DIR,'config-3.nproj') ]
+    'PROJECT_NAME should be set': (builder) ->
+      assert.equal(builder.defines.PROJECT_NAME, 'config-3')
+    'PROJECT_DIR should be set': (builder) ->
+      assert.equal(builder.defines.PROJECT_DIR, WORK_DIR)
+    'CURRENT_DIR should be set': (builder) ->
+      assert.equal(builder.defines.CURRENT_DIR, CURRENT_DIR)
+    'check string variables': (builder) ->
+      assert.equal(builder.defines.define_0, "#{WORK_DIR}/#{CURRENT_DIR}/config-3/test")
+      assert.equal(builder.defines.define_1, 1)
+      assert.equal(builder.defines.define_2, '2')
+      assert.equal(builder.defines.define_3, '21')
+      assert.equal(builder.defines.define_4, '42')
+    'check object variables': (builder) ->
+      assert.deepEqual(builder.defines.define_5, [ 5, '5', '521', '52142' ])
+      assert.deepEqual(builder.defines.define_6, { '2': '21', test1: '621' })
+      assert.deepEqual(builder.defines.define_7, [ 5, '5', '521', '52142' ])
+      assert.deepEqual(builder.defines.define_8, { '2': '21', test1: '621' })
+      assert.equal(builder.defines.define_9, '{"2":"21","test1":"621"}')
+      assert.equal(builder.defines.define_10, '@(define_6)_' )
+    'check escaped variable': (builder) ->
+      assert.equal(builder.defines.define_11, '12\\$(define_2)')
+      assert.equal(builder.defines.define_12, '12\\\\2')
+  'parse defaults':
+    topic: ->
+      return new Builder 
+        configFiles: [ join(WORK_DIR,'config-4.nproj') ]
+    'defaults check': (builder) ->
+      console.log builder.defaults
   # 'detect environment':
   # 'state':
   # 'async lock':
