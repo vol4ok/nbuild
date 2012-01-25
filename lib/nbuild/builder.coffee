@@ -359,6 +359,13 @@ class Builder
 
 
 
+  _expandConfig: (config) ->
+    result = {}
+    for key, val of config
+      continue if key[0] is '@'
+      result[key] = @_parseVars(val)
+    return result
+    
   ###*
   * Parse variables
   * @private
