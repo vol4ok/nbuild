@@ -6,6 +6,20 @@ path = require 'path'
 
 {normalize, basename, dirname, extname, join, existsSync} = path
 
+copy = (builder, name, options) ->
+  builder.lock()
+  cp = new CopyFiles options.source, options.destination, 
+    replaceStrategy: CopyFiles.REPLACE_OLDER
+    on_complete: (stat, cp) ->
+      console.log "#{name}: #{stat.filesCopied} files copied".green
+      rollback = cp.generateRollback()
+      builder.setState(name, rollback: rollback)
+      builder.unlock()
+    on_progress: (ctx, cp) ->
+      if builder.verbose and not ctx.skipped
+        console.log "#{relative(process.cwd(), ctx.src)} -> #{relative(process.cwd(), ctx.dst)}".grey
+
+
 class CopyFiles
   # for internal use
   STATUS_SUCCESS = 0

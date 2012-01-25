@@ -21,24 +21,8 @@ child_process = require 'child_process'
 VARIABLE_REGEX_1 = /\$\(([\S]+?)\)/g
 VARIABLE_REGEX_2 = /^\@\(([\S]+?)\)$/
     
-copy = (builder, name, options) ->
-  builder.lock()
-  cp = new CopyFiles options.source, options.destination, 
-    replaceStrategy: CopyFiles.REPLACE_OLDER
-    on_complete: (stat, cp) ->
-      console.log "#{name}: #{stat.filesCopied} files copied".green
-      rollback = cp.generateRollback()
-      builder.setState(name, rollback: rollback)
-      builder.unlock()
-    on_progress: (ctx, cp) ->
-      if builder.verbose and not ctx.skipped
-        console.log "#{relative(process.cwd(), ctx.src)} -> #{relative(process.cwd(), ctx.dst)}".grey
-        
-remove = (builder, name, options) ->
-  rm = new RemoveFiles options.items, on_remove: (item) ->
-    console.log "remove #{relative(process.cwd(), item)}".grey if builder.verbose
-  console.log "#{name}: #{rm.statistics.filesRemoved} files removed".green
     
+       
 ###* 
  * @class Builder сlass 
  * @public
@@ -64,8 +48,8 @@ class Builder
       4) set global defaults
       5) set environment
       6) set work directory to main config dir
-      7) load state
-      8) load plugins
+      7) oad plugins
+      8) load statel
   ###
   
   constructor: (options) ->
@@ -124,11 +108,10 @@ class Builder
     * @private 
     ###
     @types = 
-      "batch":    _.bind(@_batch,        this)
-      "rollback": _.bind(@_rollback,     this)
-      "exec":     _.bind(@_exec,         this)
-      "define":   _.bind(@_parseDefine,  this)
-      "default":  _.bind(@_parseDefault, this)
+      "batch":    _.bind(@_batch,    this)
+      "rollback": _.bind(@_rollback, this)
+      "define":   _.bind(@_define,   this)
+      "default":  _.bind(@_default,  this)
     
     hasLoad = no
     for configFile in options.configFiles
@@ -150,43 +133,15 @@ class Builder
     throw 'Error! No valid config!' unless hasLoad
       
     @environment = options.environment or @config["@environment"]
-    
-    for name, node of @config when node['@type'] and node['@type'] is 'define'
-      continue if node["@environment"] and node["@environment"] isnt @environment
-      for key, val of node
-        continue if key[0] is '@'
-        @defines[key] = @_parseVars(val)
-                        
-    for key,val of @config when val['@type'] and val['@type'] is 'default'
-      continue if node["@environment"] and node["@environment"] isnt @environment
-      for key, val of node
-        continue if key[0] is '@'
-        @defaults[key] = @_parseVars(val)
+        
+    for name, config of @config when config['@type'] and config['@type'] is 'define'
+      @_define(name, config)
+      
+    for name, config of @config when config['@type'] and config['@type'] is 'default'
+      @_default(name, config)
         
     @_scanPlugins()
     @_loadState()
-    
-    
-  ###*
-  * Parse variables
-  * @private
-  * @param val {Any} value for parse
-  ###
-    
-  _parseVars: (val) ->
-    replacer = (match, name, pos, str) => 
-      i = 0
-      while pos > 0 and str[pos-1] == '\\'
-        pos--; i++
-      if i % 2 is 1
-        return match
-      return if _.isString(@defines[name]) then @defines[name] else JSON.stringify(@defines[name])
-    if _.isString(val)
-      if VARIABLE_REGEX_2.test(val)
-        return JSON.parse(val.replace(VARIABLE_REGEX_2, replacer))
-      return val.replace(VARIABLE_REGEX_1, replacer)
-    else
-      return JSON.parse(JSON.stringify(val).replace(VARIABLE_REGEX_1, replacer))
       
       
     
@@ -307,6 +262,7 @@ class Builder
       - plugin must export initialize(builder) function
       - plugin must have extension .plugin.coffee or .plugin.js
   ###
+  
   _scanPlugins: ->
     for path in @plugins
       process.chdir(@defines.PROJECT_DIR)
@@ -328,6 +284,7 @@ class Builder
   * @param func {Function} handler function
   * @param obj  {Object}   this object for function, if function is class method
   ###
+  
   registerType: (name, func, obj = null) ->
     if obj
       @types[name] = _.bind(func, obj)
@@ -355,6 +312,7 @@ class Builder
   * @param name    {String} 
   * @param options {Object}  
   ###
+  
   _rollback: (name, options) ->
     rollback = @state[options['step-name']].rollback
     unless rollback?
@@ -370,45 +328,56 @@ class Builder
           console.log "rmdir #{entry.path}" if builder.verbose
         catch err
           console.warn "Warning: can't delete dir #{entry.path}".yellow
-
+      
   ###*
-  * Exec shell commands
+  * Parse define node
   *
   * @private
   * @param name    {String} 
-  * @param options {Object}  
+  * @param config  {Object}  
   ###
-  _exec: (name, options) ->
-    @_lock()
-    oldDir = null
-    if options["change-dir"]
-      if existsSync(options["change-dir"])
-        newDir = fs.realpathSync(options["change-dir"])
-        oldDir = process.cwd()
-        console.log "change dir to #{newDir}".cyan
-        process.chdir(newDir)
-      else
-        @unlock()
-        throw "Error: directory #{options["change-dir"]} not exists"
-    n = 0
-    console.log 'executing...'.cyan
-    async.forEachSeries options.commands
-    , (command, callback) -> 
-      child_process.exec command, (err, stdout, stderr) ->
-        if err is null
-          console.log stdout if builder.verbose
-          console.log "#{name}[#{n}]: `#{command}` successfully executed!".green
-        else
-          console.error stderr if builder.verbose
-          console.error "Error: exec `#{command}` failed with error \"#{err}\"".red
-        n++
-        callback(0) 
-    , (err) ->
-      if oldDir
-        process.chdir(oldDir)
-      @unlock()
   
-  _parseDefine: ->
-  _parseDefault: ->
-    
+  _define: (name, config) ->
+    return if config["@environment"] and config["@environment"] isnt @environment
+    for key, val of config
+      continue if key[0] is '@'
+      @defines[key] = @_parseVars(val)
+      
+  ###*
+  * Parse default node
+  *
+  * @private
+  * @param name    {String} 
+  * @param config  {Object}  
+  ###
+  
+  _default: (name, config) ->
+    return if config["@environment"] and config["@environment"] isnt @environment
+    for key, val of config
+      continue if key[0] is '@'
+      @defaults[key] = @_parseVars(val)
+
+
+
+  ###*
+  * Parse variables
+  * @private
+  * @param val {Any} value for parse
+  ###
+
+  _parseVars: (val) ->
+    replacer = (match, name, pos, str) => 
+      i = 0
+      while pos > 0 and str[pos-1] == '\\'
+        pos--; i++
+      if i % 2 is 1
+        return match
+      return if _.isString(@defines[name]) then @defines[name] else JSON.stringify(@defines[name])
+    if _.isString(val)
+      if VARIABLE_REGEX_2.test(val)
+        return JSON.parse(val.replace(VARIABLE_REGEX_2, replacer))
+      return val.replace(VARIABLE_REGEX_1, replacer)
+    else
+      return JSON.parse(JSON.stringify(val).replace(VARIABLE_REGEX_1, replacer))
+      
 module.exports = Builder

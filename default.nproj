@@ -1,17 +1,17 @@
 {
-  "_enveroument": "development",
+  "@enveroument": "development",
   
-  "_define": {
-    "output-dir": "$(PROJECT_DIR)/test"
+  "@define": {
+    "output-dir": "$(output-dir)/test"
   },
   
-  "_default": {
+  "@default": {
     "output-dir": "$(OUTPUT_DIR)"
   },
   
   "test-1": {
     "copy-1": {
-      "_type": "copy",
+      "@type": "copy",
       "source": "$(PROJECT_DIR)/node_modules",
       "destination": "$(OUTPUT_DIR)/node_modules"
     },
@@ -30,7 +30,7 @@
   },
   "clean": {
     "rollback-1": {
-      "_type": "rollback",
+      "@type": "rollback",
       "step-name": "copy-1"
     }
   }
