@@ -24,9 +24,9 @@ VARIABLE_REGEX_2 = /^\@\(([\S]+?)\)$/
     
        
 ###* 
- * @class Builder сlass 
- * @public
- * @api
+* @class Builder сlass 
+* @public
+* @api
 ###
       
 class Builder
