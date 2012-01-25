@@ -6,13 +6,6 @@ path = require 'path'
 
 {normalize, basename, dirname, extname, join, existsSync} = path
 
-
-remove = (builder, name, options) ->
-  rm = new RemoveFiles options.items, on_remove: (item) ->
-    console.log "remove #{relative(process.cwd(), item)}".grey if builder.verbose
-  console.log "#{name}: #{rm.statistics.filesRemoved} files removed".green
-
-
 class RemoveFiles
   defaults: {}
   constructor: (items, options) ->
