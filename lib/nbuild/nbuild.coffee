@@ -26,6 +26,8 @@ SWITCHES = [
   ['-h', '--help',              'display this help message']
 ]
 
+STANDARD_PLUGIN_DIR = "#{__dirname}/../../plugins"
+
 ###* Entry point ###
 
 main = () ->
@@ -61,16 +63,19 @@ main = () ->
     console.log "Command is not specified, read the help for more information `nbuild -h`".yellow
     return
     
+  plugins = [ STANDARD_PLUGIN_DIR ]
+  plugins = plugins.concat(o.plugins) if o.plugins
+  
   builderOptions = {}
   builderOptions.verbose     = o.verbose if o.verbose
   builderOptions.environment = o.environment if o.environment
-  builderOptions.plugins     = o.plugins of o.plugins
+  builderOptions.plugins     = plugins
   builderOptions.configFiles = configFiles
   
-  try
-    builder = new Builder(builderOptions)
-    builder.exec(cmd) for cmd in o.arguments
-  catch err
-    console.log "#{err}".red
+  #try
+  builder = new Builder(builderOptions)
+  builder.exec(cmd) for cmd in o.arguments
+  #catch err
+  #  console.log "#{err}".red
     
 main()
