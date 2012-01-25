@@ -57,3 +57,20 @@ coffee-script
 less
 
 merge
+
+reserver words
+@environment — default environment
+@defines     — defines constants and variables
+@defaults    — set default key values
+@type
+
+используемые теги в доках
+
+@param
+@return
+@api {public|private}
+@class
+@constructor
+@private
+@public
+
