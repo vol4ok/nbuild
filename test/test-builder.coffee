@@ -95,13 +95,38 @@ vows.describe('builder').addBatch({
       assert.equal(builder.defines.define_12, '12\\\\2')
       assert.equal(builder.defaults.default_11, '12\\$(define_2)')
       assert.equal(builder.defaults.default_12, '12\\\\2')
-    'load plugin':
-      topic: -> new Builder 
-        configFiles: [ join(WORK_DIR,'config-3.nproj') ]
-        pluginsDir: [ '/Users/Andrew/Sites/projects/nbuild/test/sample' ]
-      'test plugin': (builder) ->
-        builder.types.test()
-        builder.types.test2()
+  'load single plugins':
+    topic: -> new Builder 
+      configFiles: [ join(WORK_DIR,'config-3.nproj') ]
+      plugins: [ 'sample-1.plugin.coffee' ]
+    'check plugin load': (builder) ->
+      assert.include(builder.types, 'test')
+      assert.include(builder.types, 'test2')
+    'check plugin as function': (builder) ->
+      assert.equal(builder.types.test(), 123)
+    'check plugin as class method': (builder) ->
+      assert.equal(builder.types.test2(), 234)
+  'load plugins dir':
+    topic: -> new Builder 
+      configFiles: [ join(WORK_DIR,'config-3.nproj') ]
+      plugins: [ '.' ]
+    'check plugins load': (builder) ->
+      assert.include(builder.types, 'test')
+      assert.include(builder.types, 'test2')
+      assert.include(builder.types, 'test3')
+    'check plugin as function': (builder) ->
+      assert.equal(builder.types.test(), 123)
+      assert.equal(builder.types.test3(), 345)
+    'check plugin as class method': (builder) ->
+      assert.equal(builder.types.test2(), 234)
+  'load multiple plugins':
+    topic: -> new Builder 
+      configFiles: [ join(WORK_DIR,'config-3.nproj') ]
+      plugins: [ 'sample-1.plugin.coffee', 'somedir' ]
+    'check plugins load': (builder) ->
+      assert.include(builder.types, 'test')
+      assert.include(builder.types, 'test2')
+      assert.include(builder.types, 'test3')
   # 'detect environment':
   # 'state':
   # 'async lock':

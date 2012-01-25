@@ -56,7 +56,7 @@ class Builder
   * @param options.verbose     {Boolean}
   * @param options.environment {String}
   * @param options.configFiles {Array} array of path of config files
-  * @param options.pluginsDir  {Array} list of plugin dirs
+  * @param options.plugins     {Array} list of plugin or plugin's dirs
   * @description
       1) initialize fields
       2) parse each config file
@@ -78,10 +78,10 @@ class Builder
     @verbose = options.verbose or no
     
     ###* 
-    * @field pluginsDir {Boolean}
+    * @field plugins {Boolean}
     * @private 
     ###
-    @pluginsDir = options.pluginsDir or []
+    @plugins = options.plugins or []
     
     ###* 
     * @field config {Object}
@@ -163,13 +163,14 @@ class Builder
         continue if key[0] is '@'
         @defaults[key] = @_parseVars(val)
         
-    @_loadState()
     @_scanPlugins()
+    @_loadState()
     
     
   ###*
   * Parse variables
   * @private
+  * @param val {Any} value for parse
   ###
     
   _parseVars: (val) ->
@@ -307,11 +308,16 @@ class Builder
       - plugin must have extension .plugin.coffee or .plugin.js
   ###
   _scanPlugins: ->
-    for dir in @pluginsDir
-      for file in fs.readdirSync(dir) 
-        if /.*\.plugin\.(coffee|js)$/i.test(file)
-          console.log "require(#{join(dir,file)}).initialize(this)".cyan
-          require(join(dir,file)).initialize(this)
+    for path in @plugins
+      process.chdir(@defines.PROJECT_DIR)
+      path = fs.realpathSync(path)
+      process.chdir(@defines.CURRENT_DIR)
+      if fs.lstatSync(path).isDirectory()
+        for file in fs.readdirSync(path) 
+          if /.*\.plugin\.(coffee|js)$/i.test(file)
+            require(join(path,file)).initialize(this)
+      else
+        require(join(path)).initialize(this)
         
   ###*
   * Scan and attach plugins
@@ -323,12 +329,10 @@ class Builder
   * @param obj  {Object}   this object for function, if function is class method
   ###
   registerType: (name, func, obj = null) ->
-    console.log 'registerType'.red
     if obj
       @types[name] = _.bind(func, obj)
     else
       @types[name] = func
-      
       
       
       
