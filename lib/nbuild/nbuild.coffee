@@ -1,3 +1,11 @@
+###!
+ * nBuild
+ * Copyright(c) 2011-2012 vol4ok <admin@vol4ok.net>
+ * MIT Licensed
+###
+
+###* Module dependencies ###
+
 require 'colors'
 fs           = require 'fs'
 _            = require 'underscore'
@@ -7,8 +15,6 @@ Builder      = require('./builder')
 
 {join, existsSync} = path
 
-printLine = (line) -> process.stdout.write line + '\n'
-
 VERSION = "0.1"
 BANNER = 'Usage: nbuild [options] command[:step]'
 SWITCHES = [
@@ -16,19 +22,22 @@ SWITCHES = [
   ['-e', '--environment [ARG]', 'set environment']
   ['-v', '--verbose',           'verbose output']
   ['-V', '--version',           'show version']
+  ['-p', '--plugin [FILE*]'],   'add plugin file or dir']
   ['-h', '--help',              'display this help message']
 ]
+
+###* Entry point ###
 
 main = () ->
   optParser  = new OptionParser SWITCHES, BANNER
   o = optParser.parse process.argv[2..]
   
   if o.help
-    printLine optParser.help() 
+    console.log optParser.help() 
     return
     
   if o.version
-    printLine "nbuild v#{VERSION}"
+    console.log "nbuild v#{VERSION}"
     return
   
   configFiles = []
@@ -45,22 +54,23 @@ main = () ->
       break
       
   if configFiles.length is 0
-    printLine "Config wasn't found, read the help for more information `nbuild -h`".yellow
+    console.log "Config wasn't found, read the help for more information `nbuild -h`".yellow
     return
     
   if o.arguments.length is 0
-    printLine "Command is not specified, read the help for more information `nbuild -h`".yellow
+    console.log "Command is not specified, read the help for more information `nbuild -h`".yellow
     return
     
   builderOptions = {}
   builderOptions.verbose     = o.verbose if o.verbose
   builderOptions.environment = o.environment if o.environment
+  builderOptions.plugins     = o.plugins of o.plugins
   builderOptions.configFiles = configFiles
   
   try
     builder = new Builder(builderOptions)
     builder.exec(cmd) for cmd in o.arguments
   catch err
-    console.log printLine("#{err}".red)
+    console.log "#{err}".red
     
 main()
