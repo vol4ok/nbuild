@@ -15,26 +15,11 @@ path          = require 'path'
 async         = require 'async'
 {deepExtend}  = require './helpers'
 child_process = require 'child_process'
-CopyFiles     = require './copy-files'
-RemoveFiles   = require './remove-files'
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
 VARIABLE_REGEX_1 = /\$\(([\S]+?)\)/g
 VARIABLE_REGEX_2 = /^\@\(([\S]+?)\)$/
-
-###*
-  * Batch command — execute multiple steps
-  *
-  * @private
-  * @param {Object} builder
-  * @param {String} name
-  * @param {Object} options 
-###
-
-batch = (builder, name, options) ->
-  for key, val of options when typeof val is 'object'
-    builder.execConfig(key, val)
     
 copy = (builder, name, options) ->
   builder.lock()
@@ -48,57 +33,11 @@ copy = (builder, name, options) ->
     on_progress: (ctx, cp) ->
       if builder.verbose and not ctx.skipped
         console.log "#{relative(process.cwd(), ctx.src)} -> #{relative(process.cwd(), ctx.dst)}".grey
-
+        
 remove = (builder, name, options) ->
   rm = new RemoveFiles options.items, on_remove: (item) ->
     console.log "remove #{relative(process.cwd(), item)}".grey if builder.verbose
   console.log "#{name}: #{rm.statistics.filesRemoved} files removed".green
-  
-rollback = (builder, name, options) ->
-  rollback = builder.state[options['step-name']].rollback
-  unless rollback?
-    console.warn "Warning: rollback for `#{name}` didn't found.".yellow
-    return
-  for entry in rollback
-    if entry.command is 'rm'
-      fs.unlinkSync(entry.path) if existsSync(entry.path)
-      console.log "rm #{entry.path}".grey if builder.verbose
-    else if entry.command is 'rmdir'
-      try
-        fs.rmdirSync(entry.path) if existsSync(entry.path)
-        console.log "rmdir #{entry.path}" if builder.verbose
-      catch err
-        console.warn "Warning: can't delete dir #{entry.path}".yellow
-        
-exec = (builder, name, options) ->
-  builder.lock()
-  oldDir = null
-  if options["change-dir"]
-    if existsSync(options["change-dir"])
-      newDir = fs.realpathSync(options["change-dir"])
-      oldDir = process.cwd()
-      console.log "change dir to #{newDir}".cyan
-      process.chdir(newDir)
-    else
-      builder.unlock()
-      throw "Error: directory #{options["change-dir"]} not exists"
-  n = 0
-  console.log 'executing...'.cyan
-  async.forEachSeries options.commands
-  , (command, callback) -> 
-    child_process.exec command, (err, stdout, stderr) ->
-      if err is null
-        console.log stdout if builder.verbose
-        console.log "#{name}[#{n}]: `#{command}` successfully executed!".green
-      else
-        console.error stderr if builder.verbose
-        console.error "Error: exec `#{command}` failed with error \"#{err}\"".red
-      n++
-      callback(0) 
-  , (err) ->
-    if oldDir
-      process.chdir(oldDir)
-    builder.unlock()
     
 ###* 
  * @class Builder сlass 
@@ -110,14 +49,6 @@ class Builder
   RESERVED_COMMANDS = ["@environment", "@type"]
   STATE_FILE = "_state.json"
   
-  commands: {
-    "batch": batch
-    "copy": copy
-    "remove": remove
-    "rollback": rollback
-    "exec": exec
-  }
-  
   ###*
   * @constructor
   * @public
@@ -125,7 +56,7 @@ class Builder
   * @param options.verbose     {Boolean}
   * @param options.environment {String}
   * @param options.configFiles {Array} array of path of config files
-  * @param options.workDir     {String} path to work dir
+  * @param options.pluginsDir  {Array} list of plugin dirs
   * @description
       1) initialize fields
       2) parse each config file
@@ -134,6 +65,7 @@ class Builder
       5) set environment
       6) set work directory to main config dir
       7) load state
+      8) load plugins
   ###
   
   constructor: (options) ->
@@ -141,9 +73,15 @@ class Builder
     
     ###* 
     * @field verbose {Boolean}
-    * @private 
+    * @public 
     ###
     @verbose = options.verbose or no
+    
+    ###* 
+    * @field pluginsDir {Boolean}
+    * @private 
+    ###
+    @pluginsDir = options.pluginsDir or []
     
     ###* 
     * @field config {Object}
@@ -181,6 +119,17 @@ class Builder
     ###
     @environment = ""
     
+    ###* 
+    * @field types {Object}
+    * @private 
+    ###
+    @types = 
+      "batch":    _.bind(@_batch,        this)
+      "rollback": _.bind(@_rollback,     this)
+      "exec":     _.bind(@_exec,         this)
+      "define":   _.bind(@_parseDefine,  this)
+      "default":  _.bind(@_parseDefault, this)
+    
     hasLoad = no
     for configFile in options.configFiles
       continue unless configFile? and _.isString(configFile) and existsSync(configFile)
@@ -214,9 +163,8 @@ class Builder
         continue if key[0] is '@'
         @defaults[key] = @_parseVars(val)
         
-    #   @_parseDefaults(val, @environment)
-    # @_loadState()
-    
+    @_loadState()
+    @_scanPlugins()
     
     
   ###*
@@ -317,7 +265,6 @@ class Builder
   * Execute config object
   *
   * @public
-  * @api
   * @param name    {String} config name
   * @param options {Object} config object
   ###
@@ -332,6 +279,13 @@ class Builder
     options = @_expandConfig(options)
     @commands[type](this, name, options)
     @_saveState()
+    
+  ###*
+  * Find command config
+  *
+  * @private
+  * @param cmdpath {String}
+  ###
       
   _findCommandConfig: (cmdpath) ->
     current = @config
@@ -341,39 +295,116 @@ class Builder
       current = current[cmd]
     return _.clone(current)
     
-  ###*
-  * Parse defines object
-  * 
-  * @private
-  * @param defines {Object} object to parse
-  * @param env {String} environment name
-  * @return updated this.defines fiedld
-  * @description
     
+    
+  ###*
+  * Scan and attach plugins
+  *
+  * @private
+  * @description
+    Plugin format:
+      - plugin must export initialize(builder) function
+      - plugin must have extension .plugin.coffee or .plugin.js
+  ###
+  _scanPlugins: ->
+    for dir in @pluginsDir
+      for file in fs.readdirSync(dir) 
+        if /.*\.plugin\.(coffee|js)$/i.test(file)
+          console.log "require(#{join(dir,file)}).initialize(this)".cyan
+          require(join(dir,file)).initialize(this)
+        
+  ###*
+  * Scan and attach plugins
+  *
+  * @public
+  * @api
+  * @param name {String}   type name
+  * @param func {Function} handler function
+  * @param obj  {Object}   this object for function, if function is class method
+  ###
+  registerType: (name, func, obj = null) ->
+    console.log 'registerType'.red
+    if obj
+      @types[name] = _.bind(func, obj)
+    else
+      @types[name] = func
+      
+      
+      
+      
+  ###*
+  * Batch command — execute multiple steps
+  *
+  * @private
+  * @param name    {String} 
+  * @param options {Object}  
   ###
     
-  _parseDefines: (define, env) ->
-    
-    temp = {}
-    temp[key] = val for key, val of defines when _.isString(val)
-    for key, obj of defines when typeof obj is "object" and key is env
-      temp[key] = val for key, val of obj when _.isString(val)
-    for key, val of temp
-      newKey = key.replace("-","_").toUpperCase()
-      @defines[newKey] = _.template(val, @defines)
-    return @defines
-      
-  _parseDefaults: (defaults, env) ->
-    for key, val of defaults
-      if _.isString(val)
-        @defaults[key] = @_expandString(val)
-      else if _.isArray(val)
-        @defaults[key] = _.map val, (s) => 
-          return (if _.isString(s) then @_expandString(s) else s)
-      else if typeof val is "object" and key is env
-        @_parseDefaults(val, null)
-    return @defaults
-        
-  _loadPlugins: ->
+  _batch: (name, options) ->
+    for key, val of options when typeof val is 'object'
+      @execConfig(key, val)
+
+  ###*
+  * Rollback step
+  *
+  * @private
+  * @param name    {String} 
+  * @param options {Object}  
+  ###
+  _rollback: (name, options) ->
+    rollback = @state[options['step-name']].rollback
+    unless rollback?
+      console.warn "Warning: rollback for `#{name}` didn't found.".yellow
+      return
+    for entry in rollback
+      if entry.command is 'rm'
+        fs.unlinkSync(entry.path) if existsSync(entry.path)
+        console.log "rm #{entry.path}".grey if @verbose
+      else if entry.command is 'rmdir'
+        try
+          fs.rmdirSync(entry.path) if existsSync(entry.path)
+          console.log "rmdir #{entry.path}" if builder.verbose
+        catch err
+          console.warn "Warning: can't delete dir #{entry.path}".yellow
+
+  ###*
+  * Exec shell commands
+  *
+  * @private
+  * @param name    {String} 
+  * @param options {Object}  
+  ###
+  _exec: (name, options) ->
+    @_lock()
+    oldDir = null
+    if options["change-dir"]
+      if existsSync(options["change-dir"])
+        newDir = fs.realpathSync(options["change-dir"])
+        oldDir = process.cwd()
+        console.log "change dir to #{newDir}".cyan
+        process.chdir(newDir)
+      else
+        @unlock()
+        throw "Error: directory #{options["change-dir"]} not exists"
+    n = 0
+    console.log 'executing...'.cyan
+    async.forEachSeries options.commands
+    , (command, callback) -> 
+      child_process.exec command, (err, stdout, stderr) ->
+        if err is null
+          console.log stdout if builder.verbose
+          console.log "#{name}[#{n}]: `#{command}` successfully executed!".green
+        else
+          console.error stderr if builder.verbose
+          console.error "Error: exec `#{command}` failed with error \"#{err}\"".red
+        n++
+        callback(0) 
+    , (err) ->
+      if oldDir
+        process.chdir(oldDir)
+      @unlock()
+  
+  _parseDefine: ->
+  _parseDefault: ->
     
 module.exports = Builder

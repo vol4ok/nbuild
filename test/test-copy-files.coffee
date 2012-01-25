@@ -12,7 +12,7 @@ async     = require 'async'
 fs        = require 'fs'
 path      = require 'path'
 exec      = require('child_process').exec
-CopyFiles = require '../lib/nbuild/copy-files'
+CopyFiles = require '../plugins/copy-files'
 helpers   = require '../lib/nbuild/helpers'
 
 {rand, generateName, mkdirp, cleanDir, generateFiles} = helpers

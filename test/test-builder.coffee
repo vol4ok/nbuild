@@ -56,7 +56,7 @@ vows.describe('builder').addBatch({
       assert.equal(builder.config.test["overwrite-test-3"], "2")
       assert.deepEqual(builder.config.test["overwrite-test-4"], [2,"3"])
       assert.deepEqual(builder.config.test["overwrite-test-5"], {"test":"1", "tset": "2"})
-  'parse defines':
+  'parse defines and defaults':
     topic: ->
       return new Builder 
         configFiles: [ join(WORK_DIR,'config-3.nproj') ]
@@ -72,6 +72,11 @@ vows.describe('builder').addBatch({
       assert.equal(builder.defines.define_2, '2')
       assert.equal(builder.defines.define_3, '21')
       assert.equal(builder.defines.define_4, '42')
+      assert.equal(builder.defaults.default_0, "#{WORK_DIR}/#{CURRENT_DIR}/config-3/test")
+      assert.equal(builder.defaults.default_1, 1)
+      assert.equal(builder.defaults.default_2, '2')
+      assert.equal(builder.defaults.default_3, '21')
+      assert.equal(builder.defaults.default_4, '42')
     'check object variables': (builder) ->
       assert.deepEqual(builder.defines.define_5, [ 5, '5', '521', '52142' ])
       assert.deepEqual(builder.defines.define_6, { '2': '21', test1: '621' })
@@ -79,15 +84,24 @@ vows.describe('builder').addBatch({
       assert.deepEqual(builder.defines.define_8, { '2': '21', test1: '621' })
       assert.equal(builder.defines.define_9, '{"2":"21","test1":"621"}')
       assert.equal(builder.defines.define_10, '@(define_6)_' )
+      assert.deepEqual(builder.defaults.default_5, [ 5, '5', '521', '52142' ])
+      assert.deepEqual(builder.defaults.default_6, { '2': '21', test1: '621' })
+      assert.deepEqual(builder.defaults.default_7, [ 5, '5', '521', '52142' ])
+      assert.deepEqual(builder.defaults.default_8, { '2': '21', test1: '621' })
+      assert.equal(builder.defaults.default_9, '{"2":"21","test1":"621"}')
+      assert.equal(builder.defaults.default_10, '@(define_6)_' )
     'check escaped variable': (builder) ->
       assert.equal(builder.defines.define_11, '12\\$(define_2)')
       assert.equal(builder.defines.define_12, '12\\\\2')
-  'parse defaults':
-    topic: ->
-      return new Builder 
-        configFiles: [ join(WORK_DIR,'config-4.nproj') ]
-    'defaults check': (builder) ->
-      console.log builder.defaults
+      assert.equal(builder.defaults.default_11, '12\\$(define_2)')
+      assert.equal(builder.defaults.default_12, '12\\\\2')
+    'load plugin':
+      topic: -> new Builder 
+        configFiles: [ join(WORK_DIR,'config-3.nproj') ]
+        pluginsDir: [ '/Users/Andrew/Sites/projects/nbuild/test/sample' ]
+      'test plugin': (builder) ->
+        builder.types.test()
+        builder.types.test2()
   # 'detect environment':
   # 'state':
   # 'async lock':
