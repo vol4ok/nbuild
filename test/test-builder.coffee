@@ -21,11 +21,7 @@ helpers   = require '../lib/nbuild/helpers'
 WORK_DIR    = "#{__dirname}/sample"
 CURRENT_DIR = process.cwd()
 
-g_createdDirs = []
-
-mkdirp(WORK_DIR, 0755, g_createdDirs)
-
-vows.describe('builder').addBatch({
+vows.describe('Builder').addBatch({
   'load config':
     topic: ->
       return new Builder 
@@ -38,7 +34,7 @@ vows.describe('builder').addBatch({
     'setting environment manually': (builder) ->
       assert.equal(builder.environment, 'production')
     'builder should be unlocked': (builder) ->
-      assert.isFalse(builder.lock)
+      assert.isFalse(builder._lock)
   'load multiple config':
     topic: ->
       return new Builder 
