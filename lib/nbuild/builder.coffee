@@ -218,7 +218,7 @@ class Builder
 
 
   ###*
-  * Execute command string
+  * Execute command string; For externals calls
   *
   * @public
   * @api
@@ -227,10 +227,20 @@ class Builder
 
   exec: (cmdstr) ->
     process.chdir(@defines.PROJECT_DIR)
-    cmdpath = cmdstr.split(':')
-    @execConfig(cmdpath[cmdpath.length-1], @_findCommandConfig(cmdpath))
+    @_exec(cmdstr)
     process.chdir(@defines.CURRENT_DIR)
 
+  ###*
+  * Execute command string; For internals calls
+  *
+  * @private
+  * @param cmdstr {String}
+  ###
+  
+  _exec: (cmdstr) ->
+    cmdpath = cmdstr.split(':')
+    @execConfig(cmdpath[cmdpath.length-1], @_findCommandConfig(cmdpath))
+  
   ###*
   * Execute config object
   *
