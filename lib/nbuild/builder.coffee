@@ -391,7 +391,7 @@ class Builder
       @defaults[key] = @_parseVars(val)
 
   _expandConfig: (config) ->
-    result = {}
+    result = _.clone(@defaults)
     for key, val of config
       continue if key[0] is '@'
       result[key] = @_parseVars(val)
