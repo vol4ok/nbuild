@@ -7,7 +7,33 @@
     },
     "remove": {
       "@type": "remove",
-      "items": [ "$(PROJECT_DIR)/dst" ]
+      "items": [ "$(PROJECT_DIR)/dst/file-1.txt" ]
+    },
+    "rollback-1": {
+      "@type": "rollback",
+      "step-name": "copy"
+    },
+    "batch": {
+      "define": {
+        "@type": "define",
+        "exec-dir": "$(PROJECT_DIR)/../"
+      },
+      "defaults": {
+        "@type": "default",
+        "change-dir": "$(exec-dir)"
+      },
+      "exec": {
+        "@type": "exec",
+        "commands": [ "echo \"Hello world\"", "ls -la"]
+      }
+    },
+    "err-exec": {
+      "@type": "exec",
+      "commands": [ "ls" ]
+    },
+    "call": {
+      "@type": "call",
+      "command": [ "test:batch" ]
     }
   }
 }
