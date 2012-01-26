@@ -8,11 +8,11 @@
 ###* Module dependencies ###
 
 require "colors"
-fs            = require 'fs'
-_             = require 'underscore'
-path          = require 'path'
-async         = require 'async'
-child_process = require 'child_process'
+fs    = require 'fs'
+_     = require 'underscore'
+path  = require 'path'
+async = require 'async'
+exec  = require('child_process').exec
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
@@ -37,12 +37,12 @@ class ExecHandler
     console.log 'executing...'.cyan
     async.forEachSeries options.commands
     , (command, callback) => 
-      child_process.exec command, (err, stdout, stderr) ->
+      exec command, (err, stdout, stderr) =>
         if err is null
-          console.log stdout if builder.verbose
+          console.log stdout if @builder.verbose
           console.log "#{name}[#{n}]: `#{command}` successfully executed!".green
         else
-          console.error stderr if builder.verbose
+          console.error stderr if @builder.verbose
           console.error "Error: exec `#{command}` failed with error \"#{err}\"".red
         n++
         callback(0) 
