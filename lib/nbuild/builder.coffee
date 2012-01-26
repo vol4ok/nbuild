@@ -191,6 +191,7 @@ class Builder
       @state[name] = _.extend @state[name], value
     else
       @state[name] = value
+    @_saveState()
       
   ###*
   * Load state from file
@@ -198,9 +199,10 @@ class Builder
   ###
   
   _loadState: ->
-    if existsSync(STATE_FILE)
+    path = join(@defines.PROJECT_DIR, STATE_FILE)
+    if existsSync(path)
       try
-        data = fs.readFileSync(join(@defines.PROJECT_DIR, STATE_FILE), 'utf-8')
+        data = fs.readFileSync(path, 'utf-8')
         @state = JSON.parse(data)
       catch err
         console.log "Warning: invalid state file #{STATE_FILE}!"
@@ -262,7 +264,6 @@ class Builder
        type isnt 'define'
       config = @_expandConfig(config) 
     @types[type](name, config)
-    @_saveState()
     
   ###*
   * Find command config
@@ -390,6 +391,8 @@ class Builder
           console.log "rmdir #{entry.path}" if @verbose
         catch err
           console.warn "Warning: can't delete dir #{entry.path}".yellow
+    delete @state[options['step-name']]
+    @_saveState()
 
   ###*
   * call node
