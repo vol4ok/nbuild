@@ -1,0 +1,15 @@
+{
+  "require": {
+    "@type": "require",
+    "include-dirs": [ "src" ],
+    "targets": [ "main", "module-1" ],
+    "file-exts": [ "coffee", "js" ],
+    "output-dir": "int-dir",
+    "enumerate": "plain",
+    "remove-lines": "yes"
+  },
+  "clean": {
+    "@type": "remove",
+    "items": [ "int-dir" ]
+  }
+}
