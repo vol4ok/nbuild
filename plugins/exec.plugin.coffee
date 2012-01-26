@@ -16,9 +16,9 @@ exec  = require('child_process').exec
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
-exports.initialize = (builder) -> new ExecHandler(builder)
+exports.initialize = (builder) -> new ExecPlugin(builder)
 
-class ExecHandler
+class ExecPlugin
   constructor: (@builder) ->
     @builder.registerType('exec', @exec, this)
   exec: (name, options) ->

@@ -14,9 +14,9 @@ path      = require 'path'
 
 {relative} = path
 
-exports.initialize = (builder) -> new CopyHandler(builder)
+exports.initialize = (builder) -> new CopyPlugin(builder)
  
-class CopyHandler
+class CopyPlugin
   constructor: (@builder) -> 
     @builder.registerType('copy', @copy, this) 
   copy: (name, options) ->

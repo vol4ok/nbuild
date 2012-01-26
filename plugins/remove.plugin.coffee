@@ -14,9 +14,9 @@ path        = require 'path'
 
 {relative} = path
 
-exports.initialize = (builder) -> new RemoveHandler(builder)
+exports.initialize = (builder) -> new RemovePlugin(builder)
 
-class RemoveHandler
+class RemovePlugin
   constructor: (@builder) ->
     @builder.registerType('remove', @remove, this) 
   remove: (name, options) ->
