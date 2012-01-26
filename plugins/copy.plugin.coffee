@@ -20,7 +20,6 @@ class CopyHandler
   constructor: (@builder) -> 
     @builder.registerType('copy', @copy, this) 
   copy: (name, options) ->
-    console.log "CopyHandler.copy".magenta
     @builder.lock()
     cp = new CopyFiles options.source, options.destination, 
       replaceStrategy: CopyFiles.REPLACE_OLDER
