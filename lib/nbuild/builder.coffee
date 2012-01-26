@@ -249,15 +249,18 @@ class Builder
   * @param options {Object} config object
   ###
   
-  execConfig: (name, options) ->
+  execConfig: (name, config) ->
     if @_lock
-      @commandQue.push(=> @execConfig(name, options))
+      @commandQue.push(=> @execConfig(name, config))
       return
-    type = options['@type']
+    type = config['@type']
     type = 'batch' unless type?
     return unless @types[type]?
-    options = @_expandConfig(options)
-    @types[type](name, options)
+    if type isnt 'batch' and 
+       type isnt 'default' and 
+       type isnt 'define'
+      config = @_expandConfig(config) 
+    @types[type](name, config)
     @_saveState()
     
   ###*
