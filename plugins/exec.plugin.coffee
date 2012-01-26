@@ -24,15 +24,15 @@ class ExecHandler
   exec: (name, options) ->
     @builder.lock()
     oldDir = null
-    if options["change-dir"]
-      if existsSync(options["change-dir"])
-        newDir = fs.realpathSync(options["change-dir"])
-        oldDir = process.cwd()
-        console.log "change dir to #{newDir}".cyan
-        process.chdir(newDir)
-      else
-        @builder.unlock()
-        throw "Error: directory #{options["change-dir"]} not exists"
+    newDir = options["change-dir"] or @builder.defines.PROJECT_DIR
+    if existsSync(newDir)
+      newDir = fs.realpathSync(newDir)
+      oldDir = process.cwd()
+      #console.log "change dir to #{newDir}".cyan
+      process.chdir(newDir)
+    else
+      @builder.unlock()
+      throw "Error: directory #{newDir} not exists"
     n = 0
     console.log 'executing...'.cyan
     async.forEachSeries options.commands
