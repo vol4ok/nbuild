@@ -123,10 +123,11 @@ class Builder
     ###
     @types = 
       "batch":    _.bind(@_batch,    this)
-      "rollback": _.bind(@_rollback, this)
       "define":   _.bind(@_define,   this)
       "default":  _.bind(@_default,  this)
-    
+      "rollback": _.bind(@_rollback, this)
+      "call":     _.bind(@_call,     this)
+      
     hasLoad = no
     for configFile in options.configFiles
       continue unless configFile? and _.isString(configFile) and existsSync(configFile)
@@ -337,7 +338,35 @@ class Builder
     @defines = @definesStack.pop()
     delete @defaults
     @defaults = @defaultsStack.pop()
-    
+      
+  ###*
+  * Parse define node
+  *
+  * @private
+  * @param name    {String} 
+  * @param config  {Object}  
+  ###
+  
+  _define: (name, config) ->
+    return if config["@environment"] and config["@environment"] isnt @environment
+    for key, val of config
+      continue if key[0] is '@'
+      @defines[key] = @_parseVars(val)
+            
+  ###*
+  * Parse default node
+  *
+  * @private
+  * @param name    {String} 
+  * @param config  {Object}  
+  ###
+  
+  _default: (name, config) ->
+    return if config["@environment"] and config["@environment"] isnt @environment
+    for key, val of config
+      continue if key[0] is '@'
+      @defaults[key] = @_parseVars(val)
+      
   ###*
   * Rollback step
   *
@@ -361,35 +390,30 @@ class Builder
           console.log "rmdir #{entry.path}" if @verbose
         catch err
           console.warn "Warning: can't delete dir #{entry.path}".yellow
-      
-  ###*
-  * Parse define node
-  *
-  * @private
-  * @param name    {String} 
-  * @param config  {Object}  
-  ###
-  
-  _define: (name, config) ->
-    return if config["@environment"] and config["@environment"] isnt @environment
-    for key, val of config
-      continue if key[0] is '@'
-      @defines[key] = @_parseVars(val)
-      
-  ###*
-  * Parse default node
-  *
-  * @private
-  * @param name    {String} 
-  * @param config  {Object}  
-  ###
-  
-  _default: (name, config) ->
-    return if config["@environment"] and config["@environment"] isnt @environment
-    for key, val of config
-      continue if key[0] is '@'
-      @defaults[key] = @_parseVars(val)
 
+  ###*
+  * call node
+  *
+  * @private
+  * @param name    {String} 
+  * @param config  {Object}  
+  ###
+  
+  _call: (name, config) ->
+    if _.isArray(config.command)
+      for cmd in config.command
+        @_exec(cmd)
+    else
+      @_exec(config.command)
+    
+
+  ###*
+  * Parse vars of each config entry
+  *
+  * @private
+  * @param config  {Object} 
+  ###
+  
   _expandConfig: (config) ->
     result = _.clone(@defaults)
     for key, val of config
