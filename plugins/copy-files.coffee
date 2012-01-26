@@ -6,6 +6,11 @@ path = require 'path'
 
 {normalize, basename, dirname, extname, join, existsSync} = path
 
+###
+TODO
+  more ditailed rollback info, include information about replace and creation
+###
+
 class CopyFiles
   # for internal use
   STATUS_SUCCESS = 0

@@ -1,6 +1,9 @@
 require "colors"
 _         = require 'underscore'
 CopyFiles = require './copy-files'
+path      = require 'path'
+
+{relative} = path
 
 exports.initialize = (builder) -> new CopyHandler(builder)
  

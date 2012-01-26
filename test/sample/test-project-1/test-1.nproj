@@ -1,7 +1,13 @@
 {
   "test": {
-    "@type": "copy",
-    "source": "$(PROJECT_DIR)/src",
-    "destination": "$(PROJECT_DIR)/dst"
+    "copy": {
+      "@type": "copy",
+      "source": "$(PROJECT_DIR)/src",
+      "destination": "$(PROJECT_DIR)/dst"
+    },
+    "remove": {
+      "@type": "remove",
+      "items": [ "$(PROJECT_DIR)/dst" ]
+    }
   }
 }
