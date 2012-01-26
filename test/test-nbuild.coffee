@@ -69,12 +69,12 @@ vows.describe('Builder').addBatch({
       assert.isFalse(existsSync("#{WORK_DIR}/dst/file-1.txt"))
     'should show success message': (err, stdout, stderr) ->
       assert.match(stdout, /remove: 1 files removed/i)
-  'test rollback': 
-    topic: ->
-      exec './../bin/nbuild -c sample/test-project-1/test-1.nproj test:rollback', @callback
-      return undefined
-    'files should be removed': (err, stdout, stderr) ->
-      assert.isFalse(existsSync("#{WORK_DIR}/dst"))
-      assert.isFalse(existsSync("#{WORK_DIR}/dst/file-2.txt"))
-      assert.isFalse(existsSync("#{WORK_DIR}/dst/file-3.txt"))
+    'and rollback': 
+      topic: ->
+        exec './../bin/nbuild -c sample/test-project-1/test-1.nproj test:rollback', @callback
+        return undefined
+      'files should be removed': (err, stdout, stderr) ->
+        assert.isFalse(existsSync("#{WORK_DIR}/dst"))
+        assert.isFalse(existsSync("#{WORK_DIR}/dst/file-2.txt"))
+        assert.isFalse(existsSync("#{WORK_DIR}/dst/file-3.txt"))
 }).export(module)
