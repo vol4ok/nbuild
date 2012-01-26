@@ -316,10 +316,10 @@ class Builder
   ###
     
   _batch: (name, options) ->
-    @definesStack.push(@defines)
-    @defaultsStack.push(@defaults)
+    @definesStack.push(_.clone(@defines))
+    @defaultsStack.push(_.clone(@defaults))
     for key, val of options when typeof val is 'object'
-      @execConfig(key, val)
+      @execConfig(key, val)      
     delete @defines
     @defines = @definesStack.pop()
     delete @defaults
