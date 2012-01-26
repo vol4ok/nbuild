@@ -21,7 +21,7 @@ VARIABLE_REGEX_2 = /^\@\(([\S]+?)\)$/
     
 ###
 TODO
-  push enveroument for every batch
+  rename some variables
   
 ###
        
