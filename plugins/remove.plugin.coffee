@@ -1,3 +1,12 @@
+###!
+ * nBuild
+ * Copyright(c) 2011-2012 vol4ok <admin@vol4ok.net>
+ * MIT Licensed
+###
+ 
+ 
+###* Module dependencies ###
+
 require "colors"
 _           = require 'underscore'
 RemoveFiles = require './remove-files'

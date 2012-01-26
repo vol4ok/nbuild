@@ -12,9 +12,7 @@ fs            = require 'fs'
 util          = require 'util'
 _             = require 'underscore'
 path          = require 'path'
-async         = require 'async'
 {deepExtend}  = require './helpers'
-child_process = require 'child_process'
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
