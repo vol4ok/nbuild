@@ -345,7 +345,7 @@ class Builder
   * @param name    {String} 
   * @param options {Object}  
   ###
-  
+
   _rollback: (name, options) ->
     rollback = @state[options['step-name']].rollback
     unless rollback?
@@ -358,7 +358,7 @@ class Builder
       else if entry.command is 'rmdir'
         try
           fs.rmdirSync(entry.path) if existsSync(entry.path)
-          console.log "rmdir #{entry.path}" if builder.verbose
+          console.log "rmdir #{entry.path}" if @verbose
         catch err
           console.warn "Warning: can't delete dir #{entry.path}".yellow
       
