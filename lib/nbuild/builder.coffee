@@ -100,6 +100,18 @@ class Builder
     * @public 
     ###
     @defines = null
+    
+    ###* 
+    * @field defaultsStack {Array}
+    * @private 
+    ###
+    @defaultsStack = []
+    
+    ###* 
+    * @field definesStack {Array}
+    * @private 
+    ###
+    @definesStack = []
         
     ###* 
     * @field environment {String}
@@ -306,9 +318,15 @@ class Builder
   ###
     
   _batch: (name, options) ->
+    @definesStack.push(@defines)
+    @defaultsStack.push(@defaults)
     for key, val of options when typeof val is 'object'
       @execConfig(key, val)
-
+    delete @defines
+    @defines = @definesStack.pop()
+    delete @defaults
+    @defaults = @defaultsStack.pop()
+    
   ###*
   * Rollback step
   *
