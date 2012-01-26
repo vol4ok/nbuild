@@ -5,18 +5,10 @@
       "source": "$(PROJECT_DIR)/src",
       "destination": "$(PROJECT_DIR)/dst"
     },
-    "remove": {
-      "@type": "remove",
-      "items": [ "$(PROJECT_DIR)/dst/file-1.txt" ]
-    },
-    "rollback-1": {
-      "@type": "rollback",
-      "step-name": "copy"
-    },
     "batch": {
       "define": {
         "@type": "define",
-        "exec-dir": "$(PROJECT_DIR)/../"
+        "exec-dir": "$(PROJECT_DIR)/src/"
       },
       "defaults": {
         "@type": "default",
@@ -24,16 +16,28 @@
       },
       "exec": {
         "@type": "exec",
-        "commands": [ "echo \"Hello world\"", "ls -la"]
+        "commands": [ "ls -la"]
       }
     },
-    "err-exec": {
+    "exec": {
       "@type": "exec",
-      "commands": [ "ls" ]
+      "commands": [ "pwd", "echo \"Hello world\"" ]
     },
     "call": {
       "@type": "call",
       "command": [ "test:batch" ]
+    },
+    "remove": {
+      "@type": "remove",
+      "items": [ "$(PROJECT_DIR)/dst/file-1.txt" ]
+    },
+    "rollback": {
+      "@type": "rollback",
+      "step-name": "copy"
     }
+  },
+  "prepare": {
+    "@type": "remove",
+    "items": [ "$(PROJECT_DIR)/dst" ]
   }
 }
