@@ -35,6 +35,8 @@ class RequirePlugin
   ###* 
   * Handle require steps
   * 
+  * @public
+  * @constructor
   * @param {String} name — node name
   * @param {Array}  options.targets
   * @param {Array}  options["include-dirs"]
@@ -43,7 +45,6 @@ class RequirePlugin
   * @param {RegExp} [ options["require-regexp"] = /#\s*require\s+([A-Za-z_$-][A-Za-z0-9_$-.\/]*)/g ] 
   * @param {String} [ options.enumerate         = "PLAIN" ] "PLAIN"|"TREE"|"NONE"
   * @param {String} [ options.remove-lines      = "no" ] ???
-  * @param {String} [ options.output-var        = null ] ???
   ###
   
   require: (name, options) ->
@@ -56,16 +57,13 @@ class RequirePlugin
     @fileExts = options['file-exts'] if options['file-exts']?
     @requireRegexp = options['require-regexp'] if options['require-regexp']?
     @enumerate = options['enumerate'].toUpperCase()
-    @removeLines = if /^(yes|true|on)$/i.test(options['remove-lines']) then yes
-    console.log @removeLines
+    @removeLines = options['remove-lines']? if options['remove-lines']?
     
     @index = @_indexIncludeDirs(@includeDirs)
     for target in @targets
       deps = @_findDependencies(target)
-      console.log util.inspect(deps, no, null, yes)
+      #console.log util.inspect(deps, no, null, yes)
       @_saveFiles(deps)
-    
-    
     
   _indexIncludeDirs: (includeDirs, prefix = '') ->
     index = {}
