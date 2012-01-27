@@ -1,5 +1,5 @@
 ###!
- * nBuild
+ * require plugin for nBuild
  * Copyright(c) 2011-2012 vol4ok <admin@vol4ok.net>
  * MIT Licensed
 ###
