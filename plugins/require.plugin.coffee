@@ -117,6 +117,7 @@ class RequirePlugin
     context = {}
     result = []
     outputDir = join(@outputDir, "#{tree[0].name}.#{tree[0].type}")
+    count = 0
     @_mkdirp(outputDir)
     plainIndex = 0
     _saveFilesRec = (tree, parentTreeIndex = '') =>
@@ -128,13 +129,16 @@ class RequirePlugin
           data = if @removeLines 
           then d.data.replace(@requireRegexp, '')
           else d.data
+          outfile = "#{name}.#{d.type}"
           if @enumerate is "PLAIN"
-            fs.writeFileSync(join(outputDir, "#{plainIndex}.#{name}.#{d.type}"), data, 'utf-8')
+            outfile = "#{plainIndex}.#{outfile}"
           else if @enumerate is "TREE"
-            fs.writeFileSync(join(outputDir, "#{treeIndex}.#{name}.#{d.type}"), data, 'utf-8')
-          else
-            fs.writeFileSync(join(outputDir, "#{name}.#{d.type}"), data, 'utf-8')
+            outfile = "#{treeIndex}.#{outfile}"
+          fs.writeFileSync(join(outputDir, outfile), data, 'utf-8')
+          count++
+          console.log "write: #{join(outputDir, outfile)}".grey if @builder.verbose
           plainIndex++
           context[d.name] = yes
     _saveFilesRec(tree)
+    console.log "requires for #{tree[0].name}.#{tree[0].type}: #{count} files successfully written".green
     return result
