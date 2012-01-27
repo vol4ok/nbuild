@@ -6,7 +6,13 @@
     "file-exts": [ "coffee", "js" ],
     "output-dir": "int-dir",
     "enumerate": "plain",
-    "remove-lines": "yes"
+    "remove-lines": true
+  },
+  "coffee": {
+    "@type": "coffee",
+    "targets": [ "int-dir/main.coffee" ],
+    "options": { "bare": true, "utilities": false },
+    "remove": true
   },
   "clean": {
     "@type": "remove",
