@@ -1,0 +1,25 @@
+@import "../common/mixins";
+@import "../common/config";
+
+.content-view {
+  position: absolute;
+  top: @toolbar-height;
+  left: @global-sidebar-width;
+  right: 0;
+  bottom: 0;
+  background: url('@{prefix}bg9.png');
+  border-left: 1px solid #242424;
+  min-width: @page-min-width - @global-sidebar-width;
+}
+
+.content-block {
+  display: none;
+  .fish {
+    margin: 300px auto;
+    h1 {
+      color: rgba(255,255,255,0.3);
+      text-align: center;
+    }
+  }
+}
+

@@ -14,8 +14,15 @@
     "options": { "bare": true, "utilities": false },
     "remove": true
   },
+  "less": {
+    "@type": "less",
+    "targets": [ "styles/app.less"  ],
+    "include-dirs": [ "styles" ],
+    "output-dir": "output",
+    "compress": false
+  },
   "clean": {
     "@type": "remove",
-    "items": [ "int-dir" ]
+    "items": [ "int-dir", "output" ]
   }
 }
