@@ -12,10 +12,12 @@ fs            = require 'fs'
 util          = require 'util'
 _             = require 'underscore'
 path          = require 'path'
+CSON          = require 'CSON'
 {deepExtend}  = require './helpers'
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
+CSON_REGEX        = /^\s*#CSON/i
 VARIABLE_REGEX    = /\$\(([\S]+?)\)/g
 JSON_CMD_REGEX    = /^\@json\(([\S]+?)\)$/i
 JS_CMD_REGEX      = /^\@js\(([\S]+?)\)$/i
@@ -143,10 +145,13 @@ class Builder
     hasLoad = no
     for configFile in options.configFiles
       continue unless configFile? and _.isString(configFile) and existsSync(configFile)
-      json = fs.readFileSync(configFile, 'utf-8')
+      data  = fs.readFileSync(configFile, 'utf-8')
       parse = {}
       try
-        parse = JSON.parse(json)
+        if CSON_REGEX.test(data)
+          parse = CSON.parse(data)
+        else
+          parse = JSON.parse(data)
         hasLoad = yes
       catch err
         throw "JSON parse failed at #{configFile}"
@@ -156,7 +161,7 @@ class Builder
           PROJECT_NAME: basename(options.configFiles[0], extname(options.configFiles[0]))
           PROJECT_DIR:  dirname(options.configFiles[0])
           CURRENT_DIR:  process.cwd()
-      
+                
     throw 'Error! No valid config!' unless hasLoad
       
     @environment = options.environment or @config["@environment"]
