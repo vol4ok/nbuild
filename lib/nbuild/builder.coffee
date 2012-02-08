@@ -16,8 +16,11 @@ path          = require 'path'
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
-VARIABLE_REGEX_1 = /\$\(([\S]+?)\)/g
-VARIABLE_REGEX_2 = /^\@\(([\S]+?)\)$/
+VARIABLE_REGEX    = /\$\(([\S]+?)\)/g
+JSON_CMD_REGEX    = /^\@json\(([\S]+?)\)$/i
+JS_CMD_REGEX      = /^\@js\(([\S]+?)\)$/i
+PLUGIN_CMD_REGEX  = /^\@plugin\(([\S]+?)\)$/i
+INCLUDE_CMD_REGEX = /^\@include\(([\S]+?)\)$/i
     
 ###
 TODO
@@ -448,10 +451,10 @@ class Builder
         return match
       return if _.isString(@defines[name]) then @defines[name] else JSON.stringify(@defines[name])
     if _.isString(val)
-      if VARIABLE_REGEX_2.test(val)
-        return JSON.parse(val.replace(VARIABLE_REGEX_2, replacer))
-      return val.replace(VARIABLE_REGEX_1, replacer)
+      if JSON_CMD_REGEX.test(val)
+        return JSON.parse(val.replace(JSON_CMD_REGEX, replacer))
+      return val.replace(VARIABLE_REGEX, replacer)
     else
-      return JSON.parse(JSON.stringify(val).replace(VARIABLE_REGEX_1, replacer))
+      return JSON.parse(JSON.stringify(val).replace(VARIABLE_REGEX, replacer))
       
 module.exports = Builder
