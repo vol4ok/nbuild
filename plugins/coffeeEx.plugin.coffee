@@ -28,10 +28,6 @@ class CoffeeExPlugin
   ###*
   * @public
   * @constructor
-  * @param {Array}  targets
-  * @param {Object} [opts] 
-  * @param {String} [remove = "no"]
-  * @param {String} [recursive = "no"]
   ###
   constructor: (@builder) ->
     @builder.registerType('coffee-ex', @coffeeEx, this)
