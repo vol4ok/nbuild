@@ -1,0 +1,10 @@
+module.exports = (options) -> 
+  """
+  namespace "sm.cfg", (exports) ->
+    exports extends {
+      API_HOSTNAME:     "#{options['api-hostname']}"
+      API_DOMAIN:       "#{options['api-domain']}"
+      SEARCH_DOMAIN:    "#{options['search-domain']}"
+      SITE_DOMAIN:      "#{options['site-domain']}"
+    }
+  """
