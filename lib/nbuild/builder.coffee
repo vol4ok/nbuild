@@ -13,10 +13,12 @@ util          = require 'util'
 _             = require 'underscore'
 path          = require 'path'
 CSON          = require 'CSON'
+YAML        = require 'js-yaml'
 {deepExtend}  = require './helpers'
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
+YAML_REGEX        = /^\s*#YAML/i
 CSON_REGEX        = /^\s*#CSON/i
 VARIABLE_REGEX    = /\$\(([\S]+?)\)/g
 JSON_CMD_REGEX    = /^\$json\(([\S]+?)\)$/i
@@ -148,7 +150,10 @@ class Builder
       data  = fs.readFileSync(configFile, 'utf-8')
       parse = {}
       try
-        if CSON_REGEX.test(data)
+        if YAML_REGEX.test(data)
+          parse = YAML.load(data)
+          console.log parse
+        else if CSON_REGEX.test(data)
           parse = CSON.parse(data)
         else
           parse = JSON.parse(data)
