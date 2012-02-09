@@ -32,7 +32,7 @@ class CoffeeExPlugin
   constructor: (@builder) ->
     @builder.registerType('coffee-ex', @coffeeEx, this)
     
-  coffeeEx: (name, options) -> build_script(script: options, 'output-dir': @builder.defines.PROJECT_DIR)
+  coffeeEx: (name, options) -> build_script(script: options, outputDir: @builder.defines.PROJECT_DIR)
     
   indexIncludeDirectories = (includeDirs, types, prefix = '') ->
     index = {}
@@ -119,7 +119,7 @@ class CoffeeExPlugin
     fs.mkdirSync(path, 0755) unless existsSync(path)
     
   build_script = (options) ->
-    @output   = options.script['output-dir'] or options['output-dir']
+    @output   = options.script.outputDir or options.outputDir
     @includes = options.script.includes or options.includes
     @resident = options.script.resident or []
     @targets  = options.script.targets or []

@@ -30,12 +30,12 @@ class CoffeekupPlugin
     @builder.registerType('coffeekup', @coffeekup, this)
     
   coffeekup: (name, options) -> 
-    build_view(view: options, 'output-dir': @builder.defines.PROJECT_DIR)
+    build_view(view: options, outputDir: @builder.defines.PROJECT_DIR)
   
   build_view = (options) ->
     return unless options.view?
     @builder = options.view.builder
-    @output  = options.view['output-dir'] or options['output-dir']
+    @output  = options.view.outputDir or options.outputDir
     @targets = options.view.targets or []
     mkdir.sync(@output, "0755") unless existsSync(@output)
     builder = require(@builder)

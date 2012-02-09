@@ -33,7 +33,7 @@ class LessExPlugin
     @builder.lock()
     build_style 
       style: options, 
-      'output-dir': @builder.defines.PROJECT_DIR
+      outputDir: @builder.defines.PROJECT_DIR
     , =>
       @builder.unlock()
     
@@ -107,7 +107,7 @@ class LessExPlugin
       callback(err,css)
     
   build_style = (options, callback) ->
-    @output   = options.style['output-dir'] or options['output-dir']
+    @output   = options.style.outputDir or options.outputDir
     @includes = options.style.includes or options.includes
     @targets  = options.style.targets or []
     @compress = options.style.compress or options.compress or no
