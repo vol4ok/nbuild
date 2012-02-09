@@ -130,6 +130,45 @@ vows.describe('Builder').addBatch({
       assert.equal(builder.defines.define_12, '12\\\\2')
       assert.equal(builder.defaults.default_11, '12\\$(define_2)')
       assert.equal(builder.defaults.default_12, '12\\\\2')
+  'load YAML-config and parse defines and defaults':
+    topic: ->
+      return new Builder 
+        configFiles: [ join(WORK_DIR,'config-6.nproj') ]
+    'PROJECT_NAME should be set': (builder) ->
+      assert.equal(builder.defines.PROJECT_NAME, 'config-6')
+    'PROJECT_DIR should be set': (builder) ->
+      assert.equal(builder.defines.PROJECT_DIR, WORK_DIR)
+    'CURRENT_DIR should be set': (builder) ->
+      assert.equal(builder.defines.CURRENT_DIR, CURRENT_DIR)
+    'check string variables': (builder) ->
+      assert.equal(builder.defines.define_0, "#{WORK_DIR}/#{CURRENT_DIR}/config-6/test")
+      assert.equal(builder.defines.define_1, 1)
+      assert.equal(builder.defines.define_2, '2')
+      assert.equal(builder.defines.define_3, '21')
+      assert.equal(builder.defines.define_4, '42')
+      assert.equal(builder.defaults.default_0, "#{WORK_DIR}/#{CURRENT_DIR}/config-6/test")
+      assert.equal(builder.defaults.default_1, 1)
+      assert.equal(builder.defaults.default_2, '2')
+      assert.equal(builder.defaults.default_3, '21')
+      assert.equal(builder.defaults.default_4, '42')
+    'check object variables': (builder) ->
+      assert.deepEqual(builder.defines.define_5, [ 5, '5', '521', '52142' ])
+      assert.deepEqual(builder.defines.define_6, { '2': '21', test1: '621' })
+      assert.deepEqual(builder.defines.define_7, [ 5, '5', '521', '52142' ])
+      assert.deepEqual(builder.defines.define_8, { '2': '21', test1: '621' })
+      assert.equal(builder.defines.define_9, '{"2":"21","test1":"621"}')
+      assert.equal(builder.defines.define_10, '$json(define_6)_' )
+      assert.deepEqual(builder.defaults.default_5, [ 5, '5', '521', '52142' ])
+      assert.deepEqual(builder.defaults.default_6, { '2': '21', test1: '621' })
+      assert.deepEqual(builder.defaults.default_7, [ 5, '5', '521', '52142' ])
+      assert.deepEqual(builder.defaults.default_8, { '2': '21', test1: '621' })
+      assert.equal(builder.defaults.default_9, '{"2":"21","test1":"621"}')
+      assert.equal(builder.defaults.default_10, '$json(define_6)_' )
+    'check escaped variable': (builder) ->
+      assert.equal(builder.defines.define_11, '12\\$(define_2)')
+      assert.equal(builder.defines.define_12, '12\\\\2')
+      assert.equal(builder.defaults.default_11, '12\\$(define_2)')
+      assert.equal(builder.defaults.default_12, '12\\\\2')
   'load single plugins':
     topic: -> new Builder 
       configFiles: [ join(WORK_DIR,'config-3.nproj') ]
