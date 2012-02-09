@@ -13,7 +13,7 @@ util          = require 'util'
 _             = require 'underscore'
 path          = require 'path'
 CSON          = require 'CSON'
-YAML        = require 'js-yaml'
+YAML          = require 'js-yaml'
 {deepExtend}  = require './helpers'
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
