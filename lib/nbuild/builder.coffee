@@ -19,10 +19,10 @@ CSON          = require 'CSON'
 
 CSON_REGEX        = /^\s*#CSON/i
 VARIABLE_REGEX    = /\$\(([\S]+?)\)/g
-JSON_CMD_REGEX    = /^\@json\(([\S]+?)\)$/i
-JS_CMD_REGEX      = /^\@js\(([\S]+?)\)$/i
-PLUGIN_CMD_REGEX  = /^\@plugin\(([\S]+?)\)$/i
-INCLUDE_CMD_REGEX = /^\@include\(([\S]+?)\)$/i
+JSON_CMD_REGEX    = /^\$json\(([\S]+?)\)$/i
+# JS_CMD_REGEX      = /^\$js\(([\S]+?)\)$/i
+# PLUGIN_CMD_REGEX  = /^\$plugin\(([\S]+?)\)$/i
+# INCLUDE_CMD_REGEX = /^\$include\(([\S]+?)\)$/i
     
 ###
 TODO
@@ -46,7 +46,7 @@ TODO
 ###
       
 class Builder
-  RESERVED_COMMANDS = ["@environment", "@type"]
+  RESERVED_COMMANDS = ["$environment", "$type"]
   STATE_FILE = "_state.json"
   
   ###*
@@ -164,12 +164,12 @@ class Builder
                 
     throw 'Error! No valid config!' unless hasLoad
       
-    @environment = options.environment or @config["@environment"]
+    @environment = options.environment or @config["$environment"]
         
-    for name, config of @config when config['@type'] and config['@type'] is 'define'
+    for name, config of @config when config['$type'] and config['$type'] is 'define'
       @_define(name, config)
       
-    for name, config of @config when config['@type'] and config['@type'] is 'default'
+    for name, config of @config when config['$type'] and config['$type'] is 'default'
       @_default(name, config)
         
     @_scanPlugins()
@@ -273,7 +273,7 @@ class Builder
     if @_lock
       @commandQue.push(=> @execConfig(name, config))
       return
-    type = config['@type']
+    type = config['$type']
     type = 'batch' unless type?
     return unless @types[type]?
     if type isnt 'batch' and 
@@ -366,9 +366,9 @@ class Builder
   ###
   
   _define: (name, config) ->
-    return if config["@environment"] and config["@environment"] isnt @environment
+    return if config["$environment"] and config["$environment"] isnt @environment
     for key, val of config
-      continue if key[0] is '@'
+      continue if key[0] is '$'
       @defines[key] = @_parseVars(val)
             
   ###*
@@ -380,9 +380,9 @@ class Builder
   ###
   
   _default: (name, config) ->
-    return if config["@environment"] and config["@environment"] isnt @environment
+    return if config["$environment"] and config["$environment"] isnt @environment
     for key, val of config
-      continue if key[0] is '@'
+      continue if key[0] is '$'
       @defaults[key] = @_parseVars(val)
       
   ###*
@@ -437,7 +437,7 @@ class Builder
   _expandConfig: (config) ->
     result = _.clone(@defaults)
     for key, val of config
-      continue if key[0] is '@'
+      continue if key[0] is '$'
       result[key] = @_parseVars(val)
     return result
     
