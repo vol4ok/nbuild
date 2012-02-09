@@ -1,7 +1,7 @@
 {
-  "@environment": "development",
+  "$environment": "development",
   "test-defines": {
-    "@type": "define",
+    "$type": "define",
     "define_0": "$(PROJECT_DIR)/$(CURRENT_DIR)/$(PROJECT_NAME)/test",
     "define_1": 1,
     "define_2": "2",
@@ -9,15 +9,15 @@
     "define_4": "4$(define_2)",
     "define_5": [5, "5", "5$(define_3)", "5$(define_3)$(define_4)"],
     "define_6": {"test1": "6$(define_3)", "$(define_2)": "$(define_3)"},
-    "define_7": "@json(define_5)",
-    "define_8": "@json(define_6)",
+    "define_7": "$json(define_5)",
+    "define_8": "$json(define_6)",
     "define_9": "$(define_6)",
-    "define_10": "@json(define_6)_",
+    "define_10": "$json(define_6)_",
     "define_11": "12\\$(define_2)",
     "define_12": "12\\\\$(define_2)"
   },
   "test-defaults": {
-    "@type": "default",
+    "$type": "default",
     "default_0": "$(PROJECT_DIR)/$(CURRENT_DIR)/$(PROJECT_NAME)/test",
     "default_1": 1,
     "default_2": "2",
@@ -25,10 +25,10 @@
     "default_4": "4$(define_2)",
     "default_5": [5, "5", "5$(define_3)", "5$(define_3)$(define_4)"],
     "default_6": {"test1": "6$(define_3)", "$(define_2)": "$(define_3)"},
-    "default_7": "@json(define_5)",
-    "default_8": "@json(define_6)",
+    "default_7": "$json(define_5)",
+    "default_8": "$json(define_6)",
     "default_9": "$(define_6)",
-    "default_10": "@json(define_6)_",
+    "default_10": "$json(define_6)_",
     "default_11": "12\\$(define_2)",
     "default_12": "12\\\\$(define_2)"
   }

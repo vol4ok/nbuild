@@ -1,43 +1,43 @@
 {
   "test": {
     "copy": {
-      "@type": "copy",
+      "$type": "copy",
       "source": "$(PROJECT_DIR)/src",
       "destination": "$(PROJECT_DIR)/dst"
     },
     "batch": {
       "define": {
-        "@type": "define",
+        "$type": "define",
         "exec-dir": "$(PROJECT_DIR)/src/"
       },
       "defaults": {
-        "@type": "default",
+        "$type": "default",
         "change-dir": "$(exec-dir)"
       },
       "exec": {
-        "@type": "exec",
+        "$type": "exec",
         "commands": [ "ls -la"]
       }
     },
     "exec": {
-      "@type": "exec",
+      "$type": "exec",
       "commands": [ "pwd", "echo \"Hello world\"" ]
     },
     "call": {
-      "@type": "call",
+      "$type": "call",
       "command": [ "test:batch" ]
     },
     "remove": {
-      "@type": "remove",
+      "$type": "remove",
       "items": [ "$(PROJECT_DIR)/dst/file-1.txt" ]
     },
     "rollback": {
-      "@type": "rollback",
+      "$type": "rollback",
       "step-name": "copy"
     }
   },
   "prepare": {
-    "@type": "remove",
+    "$type": "remove",
     "items": [ "$(PROJECT_DIR)/dst" ]
   }
 }

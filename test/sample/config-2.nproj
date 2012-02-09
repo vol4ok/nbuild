@@ -1,8 +1,8 @@
 {
-  "@environment": "production",
+  "$environment": "production",
   "test": {
-    "@type": "defines",
-    "@environment": "development",
+    "$type": "defines",
+    "$environment": "development",
     "overwrite-test-1": null,
     "overwrite-test-2": 2,
     "overwrite-test-3": "2",

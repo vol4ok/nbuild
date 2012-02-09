@@ -1,7 +1,7 @@
 #CSON
 
 require: 
-  "@type": "require"
+  "$type": "require"
   "include-dirs": ["src"]
   targets: ["main", "module-1"]
   "file-exts": ["coffee", "js"]
@@ -10,7 +10,7 @@ require:
   "remove-lines": yes
 
 coffee: 
-  "@type": "coffee"
+  "$type": "coffee"
   targets: ["int-dir/main.coffee"]
   options: 
     bare: yes
@@ -18,14 +18,14 @@ coffee:
   remove: yes
 
 less: 
-  "@type": "less"
+  "$type": "less"
   targets: ["styles/app.less"]
   "include-dirs": ["styles"]
   "output-dir": "output"
   compress: no
   
 "coffee-template":
-  "@type": "coffee-template"
+  "$type": "coffee-template"
   target: "config/config.coffee.cstpl"
   params: 
     "api-hostname":       "la.sl.me"
@@ -35,5 +35,5 @@ less:
     "mapquest-api-key":   "Fmjtd%7Cluua29uy29%2Cb2%3Do5-hwygu"
 
 clean: 
-  "@type": "remove"
+  "$type": "remove"
   items: ["int-dir", "output"]

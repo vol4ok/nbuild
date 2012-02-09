@@ -30,7 +30,7 @@ vows.describe('Builder').addBatch({
     'config should be loaded': (builder) ->
       assert.isObject(builder.config)
       assert.isObject(builder.config.test)
-      assert.equal(builder.config['@environment'], 'development')
+      assert.equal(builder.config['$environment'], 'development')
     'setting environment manually': (builder) ->
       assert.equal(builder.environment, 'production')
     'builder should be unlocked': (builder) ->
@@ -43,7 +43,7 @@ vows.describe('Builder').addBatch({
     'config should be loaded': (builder) ->
       assert.isObject(builder.config)
       assert.isObject(builder.config.test)
-      assert.equal(builder.config['@environment'], 'production')
+      assert.equal(builder.config['$environment'], 'production')
     'setting environment manually': (builder) ->
       assert.equal(builder.environment, 'test')
     'same fields should be overwritten': (builder) ->
@@ -79,13 +79,13 @@ vows.describe('Builder').addBatch({
       assert.deepEqual(builder.defines.define_7, [ 5, '5', '521', '52142' ])
       assert.deepEqual(builder.defines.define_8, { '2': '21', test1: '621' })
       assert.equal(builder.defines.define_9, '{"2":"21","test1":"621"}')
-      assert.equal(builder.defines.define_10, '@json(define_6)_' )
+      assert.equal(builder.defines.define_10, '$json(define_6)_' )
       assert.deepEqual(builder.defaults.default_5, [ 5, '5', '521', '52142' ])
       assert.deepEqual(builder.defaults.default_6, { '2': '21', test1: '621' })
       assert.deepEqual(builder.defaults.default_7, [ 5, '5', '521', '52142' ])
       assert.deepEqual(builder.defaults.default_8, { '2': '21', test1: '621' })
       assert.equal(builder.defaults.default_9, '{"2":"21","test1":"621"}')
-      assert.equal(builder.defaults.default_10, '@json(define_6)_' )
+      assert.equal(builder.defaults.default_10, '$json(define_6)_' )
     'check escaped variable': (builder) ->
       assert.equal(builder.defines.define_11, '12\\$(define_2)')
       assert.equal(builder.defines.define_12, '12\\\\2')
@@ -118,13 +118,13 @@ vows.describe('Builder').addBatch({
       assert.deepEqual(builder.defines.define_7, [ 5, '5', '521', '52142' ])
       assert.deepEqual(builder.defines.define_8, { '2': '21', test1: '621' })
       assert.equal(builder.defines.define_9, '{"2":"21","test1":"621"}')
-      assert.equal(builder.defines.define_10, '@json(define_6)_' )
+      assert.equal(builder.defines.define_10, '$json(define_6)_' )
       assert.deepEqual(builder.defaults.default_5, [ 5, '5', '521', '52142' ])
       assert.deepEqual(builder.defaults.default_6, { '2': '21', test1: '621' })
       assert.deepEqual(builder.defaults.default_7, [ 5, '5', '521', '52142' ])
       assert.deepEqual(builder.defaults.default_8, { '2': '21', test1: '621' })
       assert.equal(builder.defaults.default_9, '{"2":"21","test1":"621"}')
-      assert.equal(builder.defaults.default_10, '@json(define_6)_' )
+      assert.equal(builder.defaults.default_10, '$json(define_6)_' )
     'check escaped variable': (builder) ->
       assert.equal(builder.defines.define_11, '12\\$(define_2)')
       assert.equal(builder.defines.define_12, '12\\\\2')
