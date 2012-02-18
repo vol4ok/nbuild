@@ -15,7 +15,7 @@ Builder      = require('./builder')
 
 {join, existsSync} = path
 
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 BANNER = 'Usage: nbuild [options] command[:step]'
 SWITCHES = [
   ['-c', '--config [FILE*]',    'path to .nproj file']
