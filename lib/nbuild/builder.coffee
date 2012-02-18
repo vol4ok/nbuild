@@ -83,7 +83,7 @@ class Builder
     * @field plugins {Boolean}
     * @private 
     ###
-    @plugins = options.plugins or []
+    @plugins = []
     
     ###* 
     * @field config {Object}
@@ -143,6 +143,7 @@ class Builder
       "default":  _.bind(@_default,  this)
       "rollback": _.bind(@_rollback, this)
       "call":     _.bind(@_call,     this)
+      "plugin":   _.bind(@_plugin,   this)
       
     hasLoad = no
     for configFile in options.configFiles
@@ -152,7 +153,6 @@ class Builder
       try
         if YAML_REGEX.test(data)
           parse = YAML.load(data)
-          console.log parse
         else if CSON_REGEX.test(data)
           parse = CSON.parse(data)
         else
@@ -168,6 +168,8 @@ class Builder
           CURRENT_DIR:  process.cwd()
                 
     throw 'Error! No valid config!' unless hasLoad
+    
+    debugger
       
     @environment = options.environment or @config["$environment"]
         
@@ -176,8 +178,12 @@ class Builder
       
     for name, config of @config when config['$type'] and config['$type'] is 'default'
       @_default(name, config)
+      
+    for name, config of @config when config['$type'] and config['$type'] is 'plugin'
+      @_plugin(name, config)
         
-    @_scanPlugins()
+    @_scanPlugins(options.plugins)
+    
     @_loadState()
       
       
@@ -314,17 +320,29 @@ class Builder
       - plugin must have extension .plugin.coffee or .plugin.js
   ###
   
-  _scanPlugins: ->
-    for path in @plugins
+  _scanPlugins: (plugins) ->
+    return unless _.isArray(plugins)
+    for path in plugins
       process.chdir(@defines.PROJECT_DIR)
       path = fs.realpathSync(path)
       process.chdir(@defines.CURRENT_DIR)
       if fs.lstatSync(path).isDirectory()
         for file in fs.readdirSync(path) 
           if /.*\.plugin\.(coffee|js)$/i.test(file)
-            require(join(path,file)).initialize(this)
+            fullpath = join(path,file)
+            console.log 'load plugin'.magenta, fullpath
+            try
+              require(fullpath).initialize(this)
+              @plugins.push(fullpath)
+            catch err
+              console.warn "Warning: load plugin `#{fullpath}` failed!".yellow
       else
-        require(join(path)).initialize(this)
+        try
+          require(path).initialize(this)
+          @plugins.push(path)
+        catch err
+          console.warn "Warning: load plugin `#{path}` failed!".yellow
+        
         
   ###*
   * Scan and attach plugins
@@ -430,6 +448,19 @@ class Builder
         @_exec(cmd)
     else
       @_exec(config.command)
+      
+  ###*
+  * load plugin node
+  *
+  * @private
+  * @param name    {String} 
+  * @param config  {Object}  
+  ###
+  _plugin: (name, config) ->
+    if config.plugin?
+      @_scanPlugins([config.plugin])
+    if config.plugins?
+      @_scanPlugins(config.plugins)
     
 
   ###*

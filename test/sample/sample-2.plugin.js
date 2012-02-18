@@ -5,6 +5,6 @@ exports.initialize = function(builder) {
 };
 
 test3 = function() {
-  //console.log("Hello world".red);
+  //console.log("Hello world3".red);
   return 345;
 };

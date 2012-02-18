@@ -1,0 +1,16 @@
+#CSON
+
+test:
+
+  testPlugins: 
+    $type: "plugin"
+    plugins: [ '.' ]
+  
+  test1:
+    $type: "test"
+  
+  test2:
+    $type: "test2"
+    
+  test3:
+    $type: "test3"
