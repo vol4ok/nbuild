@@ -330,7 +330,6 @@ class Builder
         for file in fs.readdirSync(path) 
           if /.*\.plugin\.(coffee|js)$/i.test(file)
             fullpath = join(path,file)
-            console.log 'load plugin'.magenta, fullpath
             try
               require(fullpath).initialize(this)
               @plugins.push(fullpath)
