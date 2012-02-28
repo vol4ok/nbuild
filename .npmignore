@@ -1,0 +1,7 @@
+*.coffee
+.DS_Store
+.git*
+src
+test
+package.cson
+nbuild.nproj

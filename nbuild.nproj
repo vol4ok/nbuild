@@ -1,0 +1,19 @@
+#CSON
+
+
+build:
+  cson:
+    $type: 'exec'
+    "commands": [ "cson package.cson" ]
+    
+  copy:
+    $type: 'copy'
+    source: "$(PROJECT_DIR)/src"
+    destination: "$(PROJECT_DIR)/lib"
+    
+  coffee:
+    $type: 'coffee'
+    targets: [ '$(PROJECT_DIR)/lib' ]
+    remove: yes
+    options:
+      bare: yes

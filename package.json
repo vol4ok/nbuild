@@ -1,36 +1,44 @@
 {
-  "name"            : "nbuild",
-  "description"     : "node.js build system",
-  "keywords"        : ["node.js", "builder", "compiler"],
-  "version"         : "0.2.2",
-  "author"          : "Sellsto.me team",
-  "licenses": [{
-    "type"          : "MIT",
-    "url"           : "https://raw.github.com/vol4ok/nbuild/master/LICENSE"
-  }],
+  "name": "nbuild",
+  "description": "node.js build system",
+  "keywords": [
+    "node.js",
+    "builder",
+    "compiler"
+  ],
+  "version": "0.3.0",
+  "author": "vol4ok",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.github.com/vol4ok/nbuild/master/LICENSE"
+    }
+  ],
   "engines": {
-    "node"          : ">=0.4.12"
+    "node": ">=0.4.12"
   },
-  "directories" : {
-    "lib"           : "./lib/nbuild"
+  "directories": {
+    "lib": "./lib"
   },
   "bin": {
-    "nbuild"        : "./bin/nbuild"
+    "nbuild": "./bin/nb"
   },
-  "repository":   {
-    "type"          : "git",
-    "url"           : "git://github.com/vol4ok/nbuild.git"
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vol4ok/nbuild.git"
   },
   "dependencies": {
-    "coffee-script" : "git://github.com/vol4ok/coffee-script.git#disable-helpers",
-    "coffeekup"     : ">=0.3.1",
-    "less"          : ">=1.1.6",
-    "mime"          : ">=1.2.2",
-    "colors"        : ">=0.5.0",
-    "underscore"    : ">=1.2.0",
-    "async"         : ">=0.1.15",
-    "uglify-js"     : ">=1.1.1",
-    "js-yaml"       : ">=0.3.5",
-    "CSON"          : "git://github.com/vol4ok/CSON.git"
+    "colors": ">=0.5.0",
+    "underscore": ">=1.2.0",
+    "CSON": "git://github.com/vol4ok/CSON.git",
+    "js-yaml": ">=0.3.5",
+    "async": ">=0.1.15"
+  },
+  "devDependencies": {
+    "coffee-script": "git://github.com/vol4ok/coffee-script.git#disable-helpers",
+    "coffeekup": ">=0.3.1",
+    "less": ">=1.1.6",
+    "mime": ">=1.2.2",
+    "uglify-js": ">=1.1.1"
   }
 }

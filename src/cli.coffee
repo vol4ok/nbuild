@@ -7,15 +7,16 @@
 ###* Module dependencies ###
 
 require 'colors'
-fs           = require 'fs'
-_            = require 'underscore'
-path         = require 'path'
-OptionParser = require('coffee-script/lib/coffee-script/optparse').OptionParser
-Builder      = require('./builder')
+fs             = require 'fs'
+_              = require 'underscore'
+path           = require 'path'
+{OptionParser} = require 'coffee-script/lib/coffee-script/optparse'
+Builder        = require './nbuild'
+require 'coffee.nbplug'
 
 {join, existsSync} = path
 
-VERSION = "0.2.2"
+VERSION = "0.3.0"
 BANNER = 'Usage: nbuild [options] command[:step]'
 SWITCHES = [
   ['-c', '--config [FILE*]',    'path to .nproj file']
@@ -26,7 +27,7 @@ SWITCHES = [
   ['-h', '--help',              'display this help message']
 ]
 
-STANDARD_PLUGIN_DIR = "#{__dirname}/../../plugins"
+STANDARD_PLUGIN_DIR = "#{__dirname}/../plugins"
 
 ###* Entry point ###
 
@@ -51,7 +52,7 @@ main = () ->
       
   if configFiles.length is 0
     # находим первый .nproj-файл в текущей директории
-    for file in fs.readdirSync(process.cwd()) when /\.nproj$/i.test(file)
+    for file in fs.readdirSync(process.cwd()) when /\.nbproj$/i.test(file)
       configFiles.push fs.realpathSync(join(process.cwd(), file))
       break
       

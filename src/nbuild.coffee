@@ -9,12 +9,12 @@
 
 require "colors"
 fs            = require 'fs'
-util          = require 'util'
 _             = require 'underscore'
 path          = require 'path'
-CSON          = require 'CSON'
+CSON          = require 'cson'
 YAML          = require 'js-yaml'
 {deepExtend}  = require './helpers'
+coffee        = require 'coffee-script'
 
 {normalize, basename, dirname, extname, join, existsSync, relative} = path
 
@@ -48,7 +48,7 @@ TODO
 ###
       
 class Builder
-  RESERVED_COMMANDS = ["$environment", "$type"]
+  RESERVED_COMMANDS = ["$env", "$type"]
   STATE_FILE = "_state.json"
   
   ###*
@@ -168,10 +168,8 @@ class Builder
           CURRENT_DIR:  process.cwd()
                 
     throw 'Error! No valid config!' unless hasLoad
-    
-    debugger
-      
-    @environment = options.environment or @config["$environment"]
+          
+    @environment = options.environment or @config["$env"]
         
     for name, config of @config when config['$type'] and config['$type'] is 'define'
       @_define(name, config)
@@ -323,19 +321,29 @@ class Builder
   _scanPlugins: (plugins) ->
     return unless _.isArray(plugins)
     for path in plugins
-      process.chdir(@defines.PROJECT_DIR)
-      path = fs.realpathSync(path)
-      process.chdir(@defines.CURRENT_DIR)
-      if fs.lstatSync(path).isDirectory()
-        for file in fs.readdirSync(path) 
-          if /.*\.plugin\.(coffee|js)$/i.test(file)
-            fullpath = join(path,file)
-            try
-              require(fullpath).initialize(this)
-              @plugins.push(fullpath)
-            catch err
-              console.warn "Warning: load plugin `#{fullpath}` failed!".yellow
+      console.log 'plugin'.cyan, path
+      if /^(\.{0,2}\/)/.test(path)
+        console.log 'parse match'.green
+        process.chdir(@defines.PROJECT_DIR)
+        path = fs.realpathSync(path)
+        process.chdir(@defines.CURRENT_DIR)
+        if fs.statSync(path).isDirectory()
+          for file in fs.readdirSync(path) 
+            if /.*\.nbplug\.(coffee|js)$/i.test(file)
+              fullpath = join(path,file)
+              try
+                require(fullpath).initialize(this)
+                @plugins.push(fullpath)
+              catch err
+                console.warn "Warning: load plugin `#{fullpath}` failed!".yellow
+        else
+          try
+            require(path).initialize(this)
+            @plugins.push(path)
+          catch err
+            console.warn "Warning: load plugin `#{path}` failed!".yellow
       else
+        console.log 'right code! yes!'.red
         try
           require(path).initialize(this)
           @plugins.push(path)
@@ -388,7 +396,7 @@ class Builder
   ###
   
   _define: (name, config) ->
-    return if config["$environment"] and config["$environment"] isnt @environment
+    return if config["$env"] and config["$env"] isnt @environment
     for key, val of config
       continue if key[0] is '$'
       @defines[key] = @_parseVars(val)
@@ -402,7 +410,7 @@ class Builder
   ###
   
   _default: (name, config) ->
-    return if config["$environment"] and config["$environment"] isnt @environment
+    return if config["$env"] and config["$env"] isnt @environment
     for key, val of config
       continue if key[0] is '$'
       @defaults[key] = @_parseVars(val)

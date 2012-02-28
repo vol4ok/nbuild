@@ -1,0 +1,21 @@
+#CSON
+
+$plugin:
+  $type: 'plugin'
+  plugins: [ 'coffee.nbplug', 'stylus.nbplug' ]
+
+test:
+  
+  exec:
+    $type: 'exec'
+    "commands": [ "echo Hello" ]
+    
+  test:
+    $type: 'coffee'
+    src: 'src'
+    dst: 'lib2'
+      
+  stylus:
+    $type: 'stylus'
+    src: 'test/test2'
+    dst: 'test/lib2'

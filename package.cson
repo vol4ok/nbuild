@@ -1,0 +1,33 @@
+#CSON
+name: "nbuild"
+description: "node.js build system"
+keywords: [ "node.js", "builder", "compiler" ]
+version: "0.3.0"
+author: "vol4ok"
+licenses: [
+  type: "MIT"
+  url: "https://raw.github.com/vol4ok/nbuild/master/LICENSE" ]
+engines: 
+  node: ">=0.4.12"
+directories: 
+  lib: "./lib"
+bin: 
+  nbuild: "./bin/nb"
+repository: 
+  type: "git"
+  url: "git://github.com/vol4ok/nbuild.git"
+dependencies: 
+  colors: ">=0.5.0"
+  underscore: ">=1.2.0"
+  CSON: "git://github.com/vol4ok/CSON.git"
+  "js-yaml": ">=0.3.5"
+  async: ">=0.1.15"
+devDependencies:
+  "coffee-script": "git://github.com/vol4ok/coffee-script.git#disable-helpers"
+  coffeekup: ">=0.3.1"
+  less: ">=1.1.6"
+  mime: ">=1.2.2"
+  "uglify-js": ">=1.1.1"
+
+  
+
