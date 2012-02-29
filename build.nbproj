@@ -2,20 +2,15 @@
 
 $plugin:
   $type: 'plugin'
-  plugins: [ 'coffee.nbplug', 'stylus.nbplug' ]
+  plugins: [ 'coffee.nbplug', 'stylus.nbplug', 'exec.nbplug' ]
 
-test:
+build:
   
-  exec:
+  cson:
     $type: 'exec'
-    "commands": [ "echo Hello" ]
+    exec: [ "cson package.cson" ]
     
-  test:
+  coffee:
     $type: 'coffee'
     src: 'src'
-    dst: 'lib2'
-      
-  stylus:
-    $type: 'stylus'
-    src: 'test/test2'
-    dst: 'test/lib2'
+    dst: 'lib'

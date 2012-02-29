@@ -12,7 +12,7 @@ engines:
 directories: 
   lib: "./lib"
 bin: 
-  nbuild: "./bin/nb"
+  nb: "./bin/nb"
 repository: 
   type: "git"
   url: "git://github.com/vol4ok/nbuild.git"
@@ -24,10 +24,6 @@ dependencies:
   async: ">=0.1.15"
 devDependencies:
   "coffee-script": "git://github.com/vol4ok/coffee-script.git#disable-helpers"
-  coffeekup: ">=0.3.1"
-  less: ">=1.1.6"
-  mime: ">=1.2.2"
-  "uglify-js": ">=1.1.1"
 
   
 

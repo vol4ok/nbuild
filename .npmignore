@@ -2,6 +2,7 @@
 .DS_Store
 .git*
 src
+lab
 test
 package.cson
 nbuild.nproj

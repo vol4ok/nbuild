@@ -60,10 +60,6 @@ main = () ->
     console.log "Config wasn't found, read the help for more information `nbuild -h`".yellow
     return
     
-  if o.arguments.length is 0
-    console.log "Command is not specified, read the help for more information `nbuild -h`".yellow
-    return
-    
   plugins = [ STANDARD_PLUGIN_DIR ]
   plugins = plugins.concat(o.plugins) if o.plugins
   
@@ -75,7 +71,10 @@ main = () ->
   
   #try
   builder = new Builder(builderOptions)
-  builder.exec(cmd) for cmd in o.arguments
+  if o.arguments.length > 0
+    builder.exec(cmd) for cmd in o.arguments
+  else
+    builder.exec()
   #catch err
   #  console.log "#{err}".red
     

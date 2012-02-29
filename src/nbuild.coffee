@@ -267,8 +267,11 @@ class Builder
   ###
   
   _exec: (cmdstr) ->
-    cmdpath = cmdstr.split(':')
-    @execConfig(cmdpath[cmdpath.length-1], @_findCommandConfig(cmdpath))
+    if cmdstr and cmdstr.length > 0
+      cmdpath = cmdstr.split(':')
+      @execConfig(cmdpath[cmdpath.length-1], @_findCommandConfig(cmdpath))
+    else
+      @execConfig('', @config)
   
   ###*
   * Execute config object
@@ -321,9 +324,7 @@ class Builder
   _scanPlugins: (plugins) ->
     return unless _.isArray(plugins)
     for path in plugins
-      console.log 'plugin'.cyan, path
       if /^(\.{0,2}\/)/.test(path)
-        console.log 'parse match'.green
         process.chdir(@defines.PROJECT_DIR)
         path = fs.realpathSync(path)
         process.chdir(@defines.CURRENT_DIR)
@@ -343,7 +344,6 @@ class Builder
           catch err
             console.warn "Warning: load plugin `#{path}` failed!".yellow
       else
-        console.log 'right code! yes!'.red
         try
           require(path).initialize(this)
           @plugins.push(path)
